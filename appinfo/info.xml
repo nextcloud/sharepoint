@@ -10,7 +10,8 @@
     <version>1.0.0</version>
     <namespace>SharePoint</namespace>
     <category>files</category>
-    <bugs>https://github.com/nextcloud/server/issues/</bugs>
+    <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>
+    <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/master/screenshots/configuration.png</screenshot>
     <dependencies>
         <nextcloud min-version="12" max-version="12"/>
     </dependencies>
