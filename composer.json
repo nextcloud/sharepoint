@@ -1,0 +1,5 @@
+{
+    "require": {
+        "vgrem/php-spo": "dev-master"
+    }
+}
