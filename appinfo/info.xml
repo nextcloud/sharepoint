@@ -7,7 +7,7 @@
     <description><![CDATA[SharePoint Backend for External storages]]></description>
     <licence>agpl</licence>
     <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <namespace>SharePoint</namespace>
     <category>files</category>
     <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>

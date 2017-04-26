@@ -1,0 +1,99 @@
+[
+    {
+        "name": "cweagans/composer-patches",
+        "version": "1.6.1",
+        "version_normalized": "1.6.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/cweagans/composer-patches.git",
+            "reference": "b3036f23b73570ab5d869e345277786c8eb248a9"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/cweagans/composer-patches/zipball/b3036f23b73570ab5d869e345277786c8eb248a9",
+            "reference": "b3036f23b73570ab5d869e345277786c8eb248a9",
+            "shasum": ""
+        },
+        "require": {
+            "composer-plugin-api": "^1.0",
+            "php": ">=5.3.0"
+        },
+        "require-dev": {
+            "composer/composer": "~1.0",
+            "phpunit/phpunit": "~4.6"
+        },
+        "time": "2017-03-19T18:18:52+00:00",
+        "type": "composer-plugin",
+        "extra": {
+            "class": "cweagans\\Composer\\Patches"
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "cweagans\\Composer\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-2-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Cameron Eagans",
+                "email": "me@cweagans.net"
+            }
+        ],
+        "description": "Provides a way to patch Composer packages."
+    },
+    {
+        "name": "vgrem/php-spo",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/vgrem/phpSPO.git",
+            "reference": "9a866bae3552d01b8a8e33ddd8faf8adc66e2423"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/vgrem/phpSPO/zipball/9a866bae3552d01b8a8e33ddd8faf8adc66e2423",
+            "reference": "9a866bae3552d01b8a8e33ddd8faf8adc66e2423",
+            "shasum": ""
+        },
+        "require": {
+            "ext-curl": "*",
+            "php": ">=5.4"
+        },
+        "time": "2017-04-19T08:17:21+00:00",
+        "type": "library",
+        "extra": {
+            "patches_applied": {
+                "Remove proccessed queries from queue": "https://patch-diff.githubusercontent.com/raw/vgrem/phpSPO/pull/63.patch"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-4": {
+                "Office365\\PHP\\Client\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "LGPL-3.0+"
+        ],
+        "authors": [
+            {
+                "name": "Vadim Gremyachev",
+                "email": "vvgrem@gmail.com"
+            }
+        ],
+        "description": "The library provides a Office 365 REST client for PHP. It allows to performs CRUD operations against Office 365 resources via an REST/OData based API",
+        "keywords": [
+            "Office365",
+            "api",
+            "curl",
+            "rest",
+            "sharepoint"
+        ]
+    }
+]
