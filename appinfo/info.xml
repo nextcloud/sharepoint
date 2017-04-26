@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>sharepoint</id>
+    <name>SharePoint Backend</name>
+    <summary>SharePoint Backend for External storages</summary>
+    <description><![CDATA[SharePoint Backend for External storages]]></description>
+    <licence>agpl</licence>
+    <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
+    <version>1.0.0</version>
+    <namespace>SharePoint</namespace>
+    <category>files</category>
+    <bugs>https://github.com/nextcloud/server/issues/</bugs>
+    <dependencies>
+        <nextcloud min-version="12" max-version="12"/>
+    </dependencies>
+</info>
