@@ -5,6 +5,6 @@ The Sharepoint Backend allows administrators to add Sharepoint document librarie
 
 ![screenshot](screenshots/configuration.png)
 
-Requires Nextcloud 10 or newer running on a Linux Server. Supports Sharepoint 2013 and 2016. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
+Requires Nextcloud 10 or newer. Supports Sharepoint 2013 and 2016. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
 
-learn more about External Storage and Sharepoint on https://nextcloud.com/storage/
+Learn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)
