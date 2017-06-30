@@ -3,7 +3,12 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>sharepoint</id>
     <name>SharePoint Backend</name>
-    <summary>SharePoint Backend for External storages</summary>
+    <summary>SharePoint Backend for External storages
+      An easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization.
+
+Requires Nextcloud 10 or newer running on a Linux Server. Supports Sharepoint 2013 and 2016. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
+
+learn more about External Storage and Sharepoint on https://nextcloud.com/storage/</summary>
     <description><![CDATA[SharePoint Backend for External storages]]></description>
     <licence>agpl</licence>
     <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
