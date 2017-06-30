@@ -1,7 +1,7 @@
 # sharepoint
 💾 Nextcloud SharePoint Backend for External storages
 
-Nextcloud external storage support offers an easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization.
+The Sharepoint Backend allows administrators to add Sharepoint document libraries as folders in Nextcloud. This offers an easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization. Users can use the desktop client, mobile apps or web interface and comment, tag, share and collaboratively edit files on Sharepoint just like with any other data on Nextcloud.
 
 ![screenshot](screenshots/configuration.png)
 
