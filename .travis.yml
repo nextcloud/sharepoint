@@ -4,9 +4,10 @@ language: php
 php:
     - 5.6
     - 7
+    - 7.1
 env:
     global:
-        - CORE_BRANCH=stable11
+        - CORE_BRANCH=stable12
     matrix:
         - DB=pgsql
 
@@ -18,8 +19,10 @@ matrix:
           env: DB=sqlite
         - php: 5.6
           env: DB=mysql
-        - php: 5.6
+        - php: 7.1
           env: DB=pgsql CORE_BRANCH=master
+        - php: 7.1
+          env: DB=pgsql CORE_BRANCH=stable13
     fast_finish: true
 
 before_install:
