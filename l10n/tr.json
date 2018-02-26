@@ -1,0 +1,7 @@
+{ "translations": {
+    "SharePoint" : "SharePoint",
+    "Host" : "Sunucu",
+    "Document Library" : "Belge Kitaplığı",
+    "SharePoint Backend" : "SharePoint Yönetimi"
+},"pluralForm" :"nplurals=2; plural=(n > 1);"
+}

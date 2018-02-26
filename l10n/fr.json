@@ -1,0 +1,7 @@
+{ "translations": {
+    "SharePoint" : "SharePoint",
+    "Host" : "Hôte",
+    "Document Library" : "Bibliothèque de documents",
+    "SharePoint Backend" : "Arrière-plan SharePoint"
+},"pluralForm" :"nplurals=2; plural=(n > 1);"
+}
