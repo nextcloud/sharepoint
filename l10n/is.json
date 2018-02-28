@@ -1,0 +1,7 @@
+{ "translations": {
+    "SharePoint" : "SharePoint",
+    "Host" : "Hýsitölva",
+    "Document Library" : "Skjalasafn",
+    "SharePoint Backend" : "SharePoint bakendi"
+},"pluralForm" :"nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);"
+}
