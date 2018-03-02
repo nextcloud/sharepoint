@@ -1,4 +1,5 @@
 { "translations": {
+    "SharePoint" : "SharePoint",
     "Host" : "Сервер",
     "Document Library" : "Библиотека",
     "SharePoint Backend" : "SharePoint бэкэнд"

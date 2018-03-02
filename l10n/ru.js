@@ -1,6 +1,7 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "SharePoint" : "SharePoint",
     "Host" : "Сервер",
     "Document Library" : "Библиотека",
     "SharePoint Backend" : "SharePoint бэкэнд"
