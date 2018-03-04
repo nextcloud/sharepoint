@@ -3,7 +3,7 @@ OC.L10N.register(
     {
     "SharePoint" : "SharePoint",
     "Host" : "Vert",
-    "Document Library" : "Dokument bibliotek",
-    "SharePoint Backend" : "SharePoint-bakende"
+    "Document Library" : "Dokumentbibliotek",
+    "SharePoint Backend" : "SharePoint-server"
 },
 "nplurals=2; plural=(n != 1);");
