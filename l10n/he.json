@@ -1,0 +1,7 @@
+{ "translations": {
+    "SharePoint" : "SharePoint",
+    "Host" : "מארח",
+    "Document Library" : "ספריית מסמכים",
+    "SharePoint Backend" : "מנגנון SharePoint"
+},"pluralForm" :"nplurals=2; plural=(n != 1);"
+}
