@@ -6,4 +6,4 @@ OC.L10N.register(
     "Document Library" : "დოკუმენტ ბიბლიოთეკა",
     "SharePoint Backend" : "SharePoint ბექენდი"
 },
-"nplurals=1; plural=0;");
+"nplurals=2; plural=(n==1);");
