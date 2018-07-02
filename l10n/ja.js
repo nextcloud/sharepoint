@@ -1,0 +1,7 @@
+OC.L10N.register(
+    "sharepoint",
+    {
+    "Host" : "ホスト",
+    "Document Library" : "ドキュメントライブラリー"
+},
+"nplurals=1; plural=0;");
