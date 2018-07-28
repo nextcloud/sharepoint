@@ -2,6 +2,7 @@
     "SharePoint" : "SharePoint",
     "Host" : "Hýsitölva",
     "Document Library" : "Skjalasafn",
-    "SharePoint Backend" : "SharePoint bakendi"
+    "SharePoint Backend" : "SharePoint bakendi",
+    "SharePoint Backend for External storages" : "SharePoint bakendi fyrir ytri gagnageymslur"
 },"pluralForm" :"nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);"
 }
