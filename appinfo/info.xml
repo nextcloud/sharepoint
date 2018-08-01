@@ -11,13 +11,13 @@ Requires Nextcloud 10 or newer. Supports Sharepoint 2013 and 2016. Nextcloud acc
 Learn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)]]></description>
     <licence>agpl</licence>
     <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <namespace>SharePoint</namespace>
     <category>files</category>
     <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>
     <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/master/screenshots/configuration.png</screenshot>
     <dependencies>
-        <nextcloud min-version="12" max-version="13"/>
+        <nextcloud min-version="14" max-version="14"/>
     </dependencies>
     <types>
         <filesystem/>

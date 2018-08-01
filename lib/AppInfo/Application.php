@@ -26,7 +26,6 @@ namespace OCA\SharePoint\AppInfo;
 use OCA\Files_External\Service\BackendService;
 use OCA\SharePoint\Backend\Provider;
 use OCP\AppFramework\App;
-use OCP\AppFramework\IAppContainer;
 
 class Application extends App {
 	public function __construct() {
