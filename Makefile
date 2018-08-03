@@ -7,7 +7,7 @@ source_dir=$(build_dir)/source
 sign_dir=$(build_dir)/sign
 package_name=$(app_name)
 cert_dir=$(HOME)/.nextcloud/certificates
-version+=1.1.0
+version+=1.2.0
 
 all: appstore
 
@@ -39,7 +39,13 @@ appstore: clean
 	--exclude=/.gitignore \
 	--exclude=/.scrutinizer.yml \
 	--exclude=/.travis.yml \
+	--exclude=phpunit*.xml \
+	--exclude=composer.* \
+	--exclude=vendor/cweagans \
+	--exclude=vendor/vrem/php-spo \
 	--exclude=/Makefile \
+	--include=vendor/vrem/php-spo/src \
+	--include=vendor/vrem/php-spo/LICENSE.md \
 	$(project_dir)/ $(sign_dir)/$(app_name)
 	tar -czf $(build_dir)/$(app_name)-$(version).tar.gz \
 		-C $(sign_dir) $(app_name)
