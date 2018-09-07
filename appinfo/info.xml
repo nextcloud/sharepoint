@@ -18,7 +18,7 @@ Learn more about External Storage and Sharepoint on [https://nextcloud.com/stora
     </types>
     <category>files</category>
     <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>
-    <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/master/screenshots/configuration.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/stable14/screenshots/configuration.png</screenshot>
     <dependencies>
         <nextcloud min-version="14" max-version="14"/>
     </dependencies>
