@@ -1,6 +1,7 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "SharePoint" : "SharePoint",
     "Host" : "ホスト",
     "Document Library" : "ドキュメントライブラリー"
 },
