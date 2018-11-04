@@ -2,6 +2,7 @@
     "SharePoint" : "SharePoint",
     "Host" : "Kiszolgáló",
     "Document Library" : "Dokumentum könyvtár",
-    "SharePoint Backend" : "SharePoint Backend"
+    "SharePoint Backend" : "SharePoint Backend",
+    "SharePoint Backend for External storages" : "SharePoint Backend Külső tárolókhoz"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
