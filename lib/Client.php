@@ -54,27 +54,21 @@ class Client {
 	/** @var string[] */
 	private $credentials;
 
-	/** @var  string */
-	private $documentLibraryTitle;
-
 	/**
 	 * SharePointClient constructor.
 	 *
 	 * @param ContextsFactory $contextsFactory
 	 * @param string $sharePointUrl
 	 * @param array $credentials
-	 * @param string $documentLibraryTitle
 	 */
 	public function __construct(
 		ContextsFactory $contextsFactory,
 		$sharePointUrl,
-		array $credentials,
-		$documentLibraryTitle
+		array $credentials
 	) {
 		$this->contextsFactory = $contextsFactory;
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
-		$this->documentLibraryTitle = $documentLibraryTitle;
 	}
 
 	/**
@@ -386,6 +380,18 @@ class Client {
 		$permissions->Low = $data->Low;
 
 		return $permissions;
+	}
+
+	/**
+	 * @return ClientObjectCollection[]
+	 */
+	public function getDocumentLibraries() {
+		$this->ensureConnection();
+		$lists = $this->context->getWeb()->getLists();
+		$lists->filter('BaseTemplate eq 101 and hidden eq false and NoCrawl eq false');
+
+		$this->loadAndExecute($lists);
+		return $lists->getData();
 	}
 
 	/**

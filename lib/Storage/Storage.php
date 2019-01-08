@@ -506,8 +506,7 @@ class Storage extends Common {
 		$this->spClient = $spcFactory->getClient(
 			$this->contextsFactory,
 			$this->server,
-			[ 'user' => $this->authUser, 'password' => $this->authPwd],
-			$this->documentLibrary
+			[ 'user' => $this->authUser, 'password' => $this->authPwd]
 		);
 
 		if(isset($parameters['cappedMemoryCache'])) {
