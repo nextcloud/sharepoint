@@ -55,8 +55,7 @@ class SharePointClientTest extends TestCase {
 		$this->client = new Client(
 			$this->contextsFactory,
 			'my.sp.server',
-			$credentials,
-			$this->documentLibraryTitle
+			$credentials
 		);
 	}
 
