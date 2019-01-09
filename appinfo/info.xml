@@ -22,4 +22,7 @@ Learn more about External Storage and Sharepoint on [https://nextcloud.com/stora
     <dependencies>
         <nextcloud min-version="16" max-version="16"/>
     </dependencies>
+    <commands>
+        <command>OCA\SharePoint\Command\ListLibraries</command>
+    </commands>
 </info>
