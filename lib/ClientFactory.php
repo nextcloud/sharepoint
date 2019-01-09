@@ -34,9 +34,8 @@ class ClientFactory {
 	public function getClient(
 		ContextsFactory $contextsFactory,
 		$sharePointUrl,
-		array $credentials,
-		$documentLibraryTitle)
+		array $credentials)
 	{
-		return new Client($contextsFactory, $sharePointUrl, $credentials, $documentLibraryTitle);
+		return new Client($contextsFactory, $sharePointUrl, $credentials);
 	}
 }
