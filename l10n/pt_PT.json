@@ -2,6 +2,7 @@
     "SharePoint" : "SharePoint",
     "Host" : "Anfitrião",
     "Document Library" : "Biblioteca de Documentos",
-    "SharePoint Backend" : "Backend do Sharepoint"
+    "SharePoint Backend" : "Backend do Sharepoint",
+    "SharePoint Backend for External storages" : "Backend do Sharepoint  para armazenamento externo"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
