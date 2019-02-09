@@ -1,5 +1,6 @@
 { "translations": {
     "SharePoint" : "SharePoint",
-    "Host" : "Vært"
+    "Host" : "Vært",
+    "Document Library" : "Dokumentbibliotek"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
