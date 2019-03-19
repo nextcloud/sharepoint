@@ -2,6 +2,7 @@
     "SharePoint" : "SharePoint",
     "Host" : "Vert",
     "Document Library" : "Dokumentbibliotek",
-    "SharePoint Backend" : "SharePoint-server"
+    "SharePoint Backend" : "SharePoint-server",
+    "SharePoint Backend for External storages" : "SharePoint-server for ekstern lagring"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
