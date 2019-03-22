@@ -41,6 +41,7 @@ class Storage extends Common {
 	const SP_PROPERTY_SIZE = 'Length';
 	const SP_PROPERTY_MTIME = 'TimeLastModified';
 	const SP_PROPERTY_URL = 'ServerRelativeUrl';
+	const SP_PROPERTY_NAME = 'Name';
 
 	const SP_PERMISSION_READ = 1;
 	const SP_PERMISSION_CREATE = 2;
@@ -195,18 +196,28 @@ class Storage extends Common {
 		}
 
 		$size = $file->getProperty(self::SP_PROPERTY_SIZE) ?: FileInfo::SPACE_UNKNOWN;
-		$mtimeValue = $file->getProperty(self::SP_PROPERTY_MTIME);
-		$mtime = $mtimeValue ? new \DateTime($mtimeValue) : null;
+		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
+		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
+
+		$mtime = new \DateTime($mtimeValue);
+		if($mtimeValue === '') {
+			// SP2013 does not provide an mtime. This way we cause a sync every
+			// 15minutes… hopefully not too often, hopefully not to rarely
+			$i = floor((int)date('i') / 15) * 15;
+			$mtime = new \DateTime(date('Y-m-d H:' . $i));
+		}
+		$timestamp = $mtime->getTimestamp();
 
 		$stat = [
 			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
 			'size'  => $size,
-			'mtime' => $mtime->getTimestamp(),
+			'mtime' => $timestamp,
 			// no property in SP 2013 & 2016, other storages do the same  :speak_no_evil:
 			'atime' => time(),
 		];
 
-		if(!is_null($stat['mtime'])) {
+		if($name !== '') {
+			// previously, checking mtime was the check, alas SP2013…
 			return $stat;
 		}
 
@@ -593,10 +604,17 @@ class Storage extends Common {
 			throw new NotFoundException('File or Folder not found');
 		} else if($entry === null || !isset($entry['instance'])) {
 			try {
-				$file = $this->spClient->fetchFileOrFolder($serverUrl, [self::SP_PROPERTY_SIZE, self::SP_PROPERTY_MTIME]);
+				$file = $this->spClient->fetchFileOrFolder($serverUrl, [
+					self::SP_PROPERTY_SIZE,
+					self::SP_PROPERTY_MTIME,
+					self::SP_PROPERTY_NAME,
+				]);
 			} catch (NotFoundException $e) {
 				$this->fileCache->set($serverUrl, false);
 				throw $e;
+			} catch (\Exception $e) {
+				\OC::$server->getLogger()->logException($e, ['app' => 'sharepoint']);
+				throw new NotFoundException($e->getMessage(), $e->getCode(), $e);
 			}
 			$cacheItem = $entry ?: [];
 			$cacheItem['instance'] = $file;
