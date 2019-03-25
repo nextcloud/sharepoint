@@ -168,7 +168,7 @@ class Storage extends Common {
 				$items = $collection->getData();
 				foreach ($items as $item) {
 					if(!$this->spClient->isHidden($item)) {
-						$files[] = $item->getProperty('Name');
+						$files[] = $item->getProperty(Storage::SP_PROPERTY_NAME);
 					}
 				}
 			}
@@ -202,8 +202,8 @@ class Storage extends Common {
 		$mtime = new \DateTime($mtimeValue);
 		if($mtimeValue === '') {
 			// SP2013 does not provide an mtime. This way we cause a sync every
-			// 15minutes… hopefully not too often, hopefully not to rarely
-			$i = floor((int)date('i') / 15) * 15;
+			// 5minutes… hopefully not too often, hopefully not to rarely
+			$i = floor((int)date('i') / 5) * 5;
 			$mtime = new \DateTime(date('Y-m-d H:' . $i));
 		}
 		$timestamp = $mtime->getTimestamp();

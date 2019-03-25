@@ -32,8 +32,10 @@ use Office365\PHP\Client\Runtime\Utilities\Requests;
 use Office365\PHP\Client\SharePoint\BasePermissions;
 use Office365\PHP\Client\SharePoint\ClientContext;
 use Office365\PHP\Client\SharePoint\File;
+use Office365\PHP\Client\SharePoint\FileCollection;
 use Office365\PHP\Client\SharePoint\FileCreationInformation;
 use Office365\PHP\Client\SharePoint\Folder;
+use Office365\PHP\Client\SharePoint\FolderCollection;
 use Office365\PHP\Client\SharePoint\SPList;
 
 class Client {
@@ -142,9 +144,13 @@ class Client {
 		$this->loadAndExecute($folder, $properties);
 
 		if($this->isSP2013 === null
-			&& in_array(Storage::SP_PROPERTY_MTIME, $properties)
+			&& ($properties === null || in_array(Storage::SP_PROPERTY_MTIME, $properties))
 		) {
 			$this->isSP2013 = (string)$folder->getProperty(Storage::SP_PROPERTY_MTIME) === '';
+			if($this->isSP2013) {
+				\OC::$server->getLogger()->debug('SP 2013 detected against {path}',
+					['app' => 'sharepoint', 'path' => $relativeServerPath]);
+			}
 		}
 
 		return $folder;
@@ -332,18 +338,30 @@ class Client {
 		$folderCollection = $folder->getFolders();
 		$fileCollection = $folder->getFiles();
 
-		if($this->isSP2013 === false) {
-			$folderCollection->filter('hidden eq false and NoCrawl eq false');
-			$fileCollection->filter('hidden eq false and NoCrawl eq false');
+		if($this->isSP2013) {
+			$this->fetchFolderContentsOnSp2013($folderCollection, $fileCollection);
+		} else {
+			$this->context->load($folderCollection);
+			$this->context->load($fileCollection);
+			$this->context->executeQuery();
 		}
-
-		$this->context->load($folderCollection);
-		$this->context->load($fileCollection);
-		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];
 
 		return $collections;
+	}
+
+	private function fetchFolderContentsOnSp2013(
+		FolderCollection &$folderCollection,
+		FileCollection &$fileCollection)
+	{
+		try {
+			$this->loadAndExecute($folderCollection);
+		} catch (\Exception $e) {};
+
+		try {
+			$this->loadAndExecute($fileCollection);
+		} catch (\Exception $e) {};
 	}
 
 	/**
@@ -363,10 +381,10 @@ class Client {
 			return false;
 		}
 		if($this->isSP2013) {
-			$name = (string)$file->getProperty(Storage::SP_PROPERTY_NAME);
-			return in_array((string)$file->getProperty(Storage::SP_PROPERTY_NAME), $this->knownSP2013SystemFolders);
-		} else if($this->isSP2013 === false) {
-			return false;
+			return in_array(
+				(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
+				$this->knownSP2013SystemFolders
+			);
 		}
 
 		// following code path when $isSP2013 was not set. If everything works
@@ -375,18 +393,13 @@ class Client {
 
 		$fields = $file->getListItemAllFields();
 		if ($fields->getProperties() === []) {
-			$this->loadAndExecute($fields, ['Id', 'Hidden']);
+			$this->loadAndExecute($fields, ['Id']);
 		}
 		$id = $fields->getProperty('Id');
-		$hidden = $fields->getProperty('Hidden'); // TODO: get someone to test this in SP 2013
-		if ($hidden === false || $id !== null) {
-			// avoids listing hidden "Forms" folder (and its contents).
-			// Have not found a different mechanism to detect whether
-			// a file or folder is hidden. There used to be a Hidden
-			// field, but seems to have gone (since SP 2016?).
-			return false;
-		}
-		return true;
+		// avoids listing hidden "Forms" folder (and its contents).
+		// Have not found a different mechanism to detect whether
+		// a (file or= folder is a system folder.
+		return $id === null;
 	}
 
 	/**
