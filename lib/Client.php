@@ -338,30 +338,13 @@ class Client {
 		$folderCollection = $folder->getFolders();
 		$fileCollection = $folder->getFiles();
 
-		if($this->isSP2013) {
-			$this->fetchFolderContentsOnSp2013($folderCollection, $fileCollection);
-		} else {
-			$this->context->load($folderCollection);
-			$this->context->load($fileCollection);
-			$this->context->executeQuery();
-		}
+		$this->context->load($folderCollection);
+		$this->context->load($fileCollection);
+		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];
 
 		return $collections;
-	}
-
-	private function fetchFolderContentsOnSp2013(
-		FolderCollection &$folderCollection,
-		FileCollection &$fileCollection)
-	{
-		try {
-			$this->loadAndExecute($folderCollection);
-		} catch (\Exception $e) {};
-
-		try {
-			$this->loadAndExecute($fileCollection);
-		} catch (\Exception $e) {};
 	}
 
 	/**

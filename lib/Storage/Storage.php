@@ -73,8 +73,8 @@ class Storage extends Common {
 	private $tempManager;
 
 	public function __construct($parameters) {
-		$this->server = $parameters['host'];
-		$this->documentLibrary = $parameters['documentLibrary'];
+		$this->server = rtrim($parameters['host'], '/') . '/';
+		$this->documentLibrary = ltrim($parameters['documentLibrary'], '/');
 
 		if(strpos($this->documentLibrary, '"') !== false) {
 			// they are, amongst others, not allowed and we use it in the filter
@@ -203,7 +203,7 @@ class Storage extends Common {
 		if($mtimeValue === '') {
 			// SP2013 does not provide an mtime. This way we cause a sync every
 			// 5minutes… hopefully not too often, hopefully not to rarely
-			$i = floor((int)date('i') / 5) * 5;
+			$i = ((int)date('i') % 5) * 5;
 			$mtime = new \DateTime(date('Y-m-d H:' . $i));
 		}
 		$timestamp = $mtime->getTimestamp();
