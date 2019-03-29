@@ -199,20 +199,19 @@ class Storage extends Common {
 		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
 		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
 
-		$mtime = new \DateTime($mtimeValue);
 		if($mtimeValue === '') {
-			// SP2013 does not provide an mtime. This way we cause a sync every
-			// 5minutes… hopefully not too often, hopefully not to rarely
-			$i = ((int)date('i') % 5) * 5;
-			$mtime = new \DateTime(date('Y-m-d H:' . $i));
+			// SP2013 does not provide an mtime.
+			$timestamp = time();
+		} else {
+			$mtime = new \DateTime($mtimeValue);
+			$timestamp = $mtime->getTimestamp();
 		}
-		$timestamp = $mtime->getTimestamp();
 
 		$stat = [
 			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
 			'size'  => $size,
 			'mtime' => $timestamp,
-			// no property in SP 2013 & 2016, other storages do the same  :speak_no_evil:
+			// no property in SP 2013 & 2016, other storages do the same
 			'atime' => time(),
 		];
 
