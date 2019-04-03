@@ -551,6 +551,10 @@ class Storage extends Common {
 				foreach ($collection->getData() as $item) {
 					/** @var  File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
+					if(is_null($url)) {
+						// at least on SP13 $url is null, although it should not
+						continue;
+					}
 					$itemEntry = $this->fileCache->get($url);
 					$itemEntry = $itemEntry ?: [];
 					if(!isset($itemEntry['instance'])) {

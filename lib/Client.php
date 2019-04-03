@@ -32,10 +32,8 @@ use Office365\PHP\Client\Runtime\Utilities\Requests;
 use Office365\PHP\Client\SharePoint\BasePermissions;
 use Office365\PHP\Client\SharePoint\ClientContext;
 use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\FileCollection;
 use Office365\PHP\Client\SharePoint\FileCreationInformation;
 use Office365\PHP\Client\SharePoint\Folder;
-use Office365\PHP\Client\SharePoint\FolderCollection;
 use Office365\PHP\Client\SharePoint\SPList;
 
 class Client {
@@ -62,6 +60,12 @@ class Client {
 
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
+
+	const DEFAULT_PROPERTIES = [
+		Storage::SP_PROPERTY_MTIME,
+		Storage::SP_PROPERTY_NAME,
+		Storage::SP_PROPERTY_SIZE,
+	];
 
 	/**
 	 * SharePointClient constructor.
@@ -338,8 +342,8 @@ class Client {
 		$folderCollection = $folder->getFolders();
 		$fileCollection = $folder->getFiles();
 
-		$this->context->load($folderCollection);
-		$this->context->load($fileCollection);
+		$this->context->load($folderCollection, self::DEFAULT_PROPERTIES);
+		$this->context->load($fileCollection, self::DEFAULT_PROPERTIES);
 		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];
