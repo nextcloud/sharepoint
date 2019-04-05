@@ -23,6 +23,8 @@
 
 namespace OCA\SharePoint;
 
+use function explode;
+use function json_decode;
 use OCA\SharePoint\Storage\Storage;
 use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
 use Office365\PHP\Client\Runtime\ClientObject;
@@ -110,6 +112,7 @@ class Client {
 				if(preg_match('/^The file \/.* does not exist\.$/', $e->getMessage()) !== 1
 					&& $e->getMessage() !== 'Unknown Error'
 					&& $e->getMessage() !== 'File Not Found.'
+					&& !$this->isErrorDoesNotExist($e)
 				) {
 					# Unexpected Exception, pass it on
 					throw $e;
@@ -119,6 +122,20 @@ class Client {
 
 		# Nothing succeeded, quit with not found
 		throw new NotFoundException('File or Folder not found');
+	}
+
+	private function isErrorDoesNotExist(\Exception $e): bool {
+		$trace = $e->getTrace()[0];
+		if($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
+			return false;
+		}
+		$error = json_decode($trace['args'][0], true)['error'];
+		$errorCode = (int)explode(',', $error['code'])[0];
+		return in_array($errorCode, [
+			-2146232832, # Microsoft.SharePoint.SPException (unclear)
+			-2147024894, # File cannot be found
+			-1, # unknown error
+		]);
 	}
 
 	/**
