@@ -32,6 +32,7 @@ use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
 use OCP\Files\FileInfo;
+use OCP\ILogger;
 use OCP\ITempManager;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
 use Office365\PHP\Client\SharePoint\File;
@@ -126,6 +127,12 @@ class Storage extends Common {
 			return true;
 		} catch (\Exception $e) {
 			$this->fileCache->remove($serverUrl);
+			\OC::$server->getLogger()->logException($e,
+				[
+					'app' => 'sharepoint',
+					'level' => ILogger::INFO
+				]
+			);
 			return false;
 		}
 	}
@@ -607,11 +614,7 @@ class Storage extends Common {
 			throw new NotFoundException('File or Folder not found');
 		} else if($entry === null || !isset($entry['instance'])) {
 			try {
-				$file = $this->spClient->fetchFileOrFolder($serverUrl, [
-					self::SP_PROPERTY_SIZE,
-					self::SP_PROPERTY_MTIME,
-					self::SP_PROPERTY_NAME,
-				]);
+				$file = $this->spClient->fetchFileOrFolder($serverUrl);
 			} catch (NotFoundException $e) {
 				$this->fileCache->set($serverUrl, false);
 				throw $e;

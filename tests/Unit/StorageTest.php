@@ -153,9 +153,7 @@ class SharePointTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
-			->with($serverPath, [
-				Storage::SP_PROPERTY_SIZE, Storage::SP_PROPERTY_MTIME, Storage::SP_PROPERTY_NAME
-			])
+			->with($serverPath)
 			->willReturn($folderMock);
 
 		$data = $this->storage->stat($path);
@@ -171,9 +169,7 @@ class SharePointTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
-			->with($serverPath, [
-				Storage::SP_PROPERTY_SIZE, Storage::SP_PROPERTY_MTIME, Storage::SP_PROPERTY_NAME
-			])
+			->with($serverPath)
 			->willThrowException(new NotFoundException());
 
 		$this->assertFalse($this->storage->stat($path));
