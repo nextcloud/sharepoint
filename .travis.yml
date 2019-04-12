@@ -7,7 +7,7 @@ php:
     - 7.3
 env:
     global:
-        - CORE_BRANCH=stable16
+        - CORE_BRANCH=master
         - APP_NAME=sharepoint
     matrix:
         - DB=sqlite
