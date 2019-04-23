@@ -23,6 +23,9 @@
 
 namespace OCA\SharePoint;
 
+use function explode;
+use function json_decode;
+use OCA\SharePoint\Storage\Storage;
 use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
 use Office365\PHP\Client\Runtime\ClientObject;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
@@ -54,6 +57,18 @@ class Client {
 	/** @var string[] */
 	private $credentials;
 
+	/** @var bool */
+	private $isSP2013;
+
+	/** @var string[] */
+	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
+
+	const DEFAULT_PROPERTIES = [
+		Storage::SP_PROPERTY_MTIME,
+		Storage::SP_PROPERTY_NAME,
+		Storage::SP_PROPERTY_SIZE,
+	];
+
 	/**
 	 * SharePointClient constructor.
 	 *
@@ -78,6 +93,7 @@ class Client {
 	 * @param string $path
 	 * @param array $properties
 	 * @return File|Folder
+	 * @throws NotFoundException
 	 * @throws \Exception
 	 */
 	public function fetchFileOrFolder($path, array $properties = null) {
@@ -96,6 +112,7 @@ class Client {
 				if(preg_match('/^The file \/.* does not exist\.$/', $e->getMessage()) !== 1
 					&& $e->getMessage() !== 'Unknown Error'
 					&& $e->getMessage() !== 'File Not Found.'
+					&& !$this->isErrorDoesNotExist($e)
 				) {
 					# Unexpected Exception, pass it on
 					throw $e;
@@ -105,6 +122,20 @@ class Client {
 
 		# Nothing succeeded, quit with not found
 		throw new NotFoundException('File or Folder not found');
+	}
+
+	private function isErrorDoesNotExist(\Exception $e): bool {
+		$trace = $e->getTrace()[0];
+		if($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
+			return false;
+		}
+		$error = json_decode($trace['args'][0], true)['error'];
+		$errorCode = (int)explode(',', $error['code'])[0];
+		return in_array($errorCode, [
+			-2146232832, # Microsoft.SharePoint.SPException (unclear)
+			-2147024894, # File cannot be found
+			-1, # unknown error
+		]);
 	}
 
 	/**
@@ -132,6 +163,17 @@ class Client {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
 		$this->loadAndExecute($folder, $properties);
+
+		if($this->isSP2013 === null
+			&& ($properties === null || in_array(Storage::SP_PROPERTY_MTIME, $properties))
+		) {
+			$this->isSP2013 = (string)$folder->getProperty(Storage::SP_PROPERTY_MTIME) === '';
+			if($this->isSP2013) {
+				\OC::$server->getLogger()->debug('SP 2013 detected against {path}',
+					['app' => 'sharepoint', 'path' => $relativeServerPath]);
+			}
+		}
+
 		return $folder;
 	}
 
@@ -316,8 +358,9 @@ class Client {
 
 		$folderCollection = $folder->getFolders();
 		$fileCollection = $folder->getFiles();
-		$this->context->load($folderCollection);
-		$this->context->load($fileCollection);
+
+		$this->context->load($folderCollection, self::DEFAULT_PROPERTIES);
+		$this->context->load($fileCollection, self::DEFAULT_PROPERTIES);
 		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];
@@ -341,20 +384,26 @@ class Client {
 			// it's expensive, we only check folders
 			return false;
 		}
+		if($this->isSP2013) {
+			return in_array(
+				(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
+				$this->knownSP2013SystemFolders
+			);
+		}
+
+		// following code path when $isSP2013 was not set. If everything works
+		// as expected it is at least not likely to end up here. Otherwise,
+		// we can add a check.
+
 		$fields = $file->getListItemAllFields();
-		if($fields->getProperties() === []) {
-			$this->loadAndExecute($fields, ['Id', 'Hidden']);
+		if ($fields->getProperties() === []) {
+			$this->loadAndExecute($fields, ['Id']);
 		}
 		$id = $fields->getProperty('Id');
-		$hidden = $fields->getProperty('Hidden'); // TODO: get someone to test this in SP 2013
-		if($hidden === false || $id !== null) {
-			// avoids listing hidden "Forms" folder (and its contents).
-			// Have not found a different mechanism to detect whether
-			// a file or folder is hidden. There used to be a Hidden
-			// field, but seems to have gone (since SP 2016?).
-			return false;
-		}
-		return true;
+		// avoids listing hidden "Forms" folder (and its contents).
+		// Have not found a different mechanism to detect whether
+		// a (file or= folder is a system folder.
+		return $id === null;
 	}
 
 	/**
