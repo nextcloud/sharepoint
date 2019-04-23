@@ -137,10 +137,14 @@ class SharePointTest extends TestCase {
 		$size = $returnSize ?: FileInfo::SPACE_UNKNOWN;
 
 		$folderMock = $this->createMock(Folder::class);
-		$folderMock->expects($this->exactly(2))
+		$folderMock->expects($this->exactly(3))
 			->method('getProperty')
-			->withConsecutive(['Length'], ['TimeLastModified'])
-			->willReturnOnConsecutiveCalls($returnSize, $returnMTime);
+			->withConsecutive(
+				[Storage::SP_PROPERTY_SIZE],
+				[Storage::SP_PROPERTY_MTIME],
+				[Storage::SP_PROPERTY_NAME]
+			)
+			->willReturnOnConsecutiveCalls($returnSize, $returnMTime, 'Documents');
 
 		$serverPath = '/' . $this->documentLibraryTitle;
 		if(trim($path, '/') !== '') {
@@ -149,7 +153,7 @@ class SharePointTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
-			->with($serverPath, [Storage::SP_PROPERTY_SIZE, Storage::SP_PROPERTY_MTIME])
+			->with($serverPath)
 			->willReturn($folderMock);
 
 		$data = $this->storage->stat($path);
@@ -165,7 +169,7 @@ class SharePointTest extends TestCase {
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
-			->with($serverPath, [Storage::SP_PROPERTY_SIZE, Storage::SP_PROPERTY_MTIME])
+			->with($serverPath)
 			->willThrowException(new NotFoundException());
 
 		$this->assertFalse($this->storage->stat($path));

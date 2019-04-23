@@ -32,6 +32,7 @@ use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
 use OCP\Files\FileInfo;
+use OCP\ILogger;
 use OCP\ITempManager;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
 use Office365\PHP\Client\SharePoint\File;
@@ -41,6 +42,7 @@ class Storage extends Common {
 	const SP_PROPERTY_SIZE = 'Length';
 	const SP_PROPERTY_MTIME = 'TimeLastModified';
 	const SP_PROPERTY_URL = 'ServerRelativeUrl';
+	const SP_PROPERTY_NAME = 'Name';
 
 	const SP_PERMISSION_READ = 1;
 	const SP_PERMISSION_CREATE = 2;
@@ -72,8 +74,8 @@ class Storage extends Common {
 	private $tempManager;
 
 	public function __construct($parameters) {
-		$this->server = $parameters['host'];
-		$this->documentLibrary = $parameters['documentLibrary'];
+		$this->server = rtrim($parameters['host'], '/') . '/';
+		$this->documentLibrary = ltrim($parameters['documentLibrary'], '/');
 
 		if(strpos($this->documentLibrary, '"') !== false) {
 			// they are, amongst others, not allowed and we use it in the filter
@@ -125,6 +127,12 @@ class Storage extends Common {
 			return true;
 		} catch (\Exception $e) {
 			$this->fileCache->remove($serverUrl);
+			\OC::$server->getLogger()->logException($e,
+				[
+					'app' => 'sharepoint',
+					'level' => ILogger::INFO
+				]
+			);
 			return false;
 		}
 	}
@@ -167,7 +175,7 @@ class Storage extends Common {
 				$items = $collection->getData();
 				foreach ($items as $item) {
 					if(!$this->spClient->isHidden($item)) {
-						$files[] = $item->getProperty('Name');
+						$files[] = $item->getProperty(Storage::SP_PROPERTY_NAME);
 					}
 				}
 			}
@@ -195,18 +203,27 @@ class Storage extends Common {
 		}
 
 		$size = $file->getProperty(self::SP_PROPERTY_SIZE) ?: FileInfo::SPACE_UNKNOWN;
-		$mtimeValue = $file->getProperty(self::SP_PROPERTY_MTIME);
-		$mtime = $mtimeValue ? new \DateTime($mtimeValue) : null;
+		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
+		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
+
+		if($mtimeValue === '') {
+			// SP2013 does not provide an mtime.
+			$timestamp = time();
+		} else {
+			$mtime = new \DateTime($mtimeValue);
+			$timestamp = $mtime->getTimestamp();
+		}
 
 		$stat = [
 			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
 			'size'  => $size,
-			'mtime' => $mtime->getTimestamp(),
-			// no property in SP 2013 & 2016, other storages do the same  :speak_no_evil:
+			'mtime' => $timestamp,
+			// no property in SP 2013 & 2016, other storages do the same
 			'atime' => time(),
 		];
 
-		if(!is_null($stat['mtime'])) {
+		if($name !== '') {
+			// previously, checking mtime was the check, alas SP2013…
 			return $stat;
 		}
 
@@ -541,6 +558,10 @@ class Storage extends Common {
 				foreach ($collection->getData() as $item) {
 					/** @var  File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
+					if(is_null($url)) {
+						// at least on SP13 $url is null, although it should not
+						continue;
+					}
 					$itemEntry = $this->fileCache->get($url);
 					$itemEntry = $itemEntry ?: [];
 					if(!isset($itemEntry['instance'])) {
@@ -593,10 +614,13 @@ class Storage extends Common {
 			throw new NotFoundException('File or Folder not found');
 		} else if($entry === null || !isset($entry['instance'])) {
 			try {
-				$file = $this->spClient->fetchFileOrFolder($serverUrl, [self::SP_PROPERTY_SIZE, self::SP_PROPERTY_MTIME]);
+				$file = $this->spClient->fetchFileOrFolder($serverUrl);
 			} catch (NotFoundException $e) {
 				$this->fileCache->set($serverUrl, false);
 				throw $e;
+			} catch (\Exception $e) {
+				\OC::$server->getLogger()->logException($e, ['app' => 'sharepoint']);
+				throw new NotFoundException($e->getMessage(), $e->getCode(), $e);
 			}
 			$cacheItem = $entry ?: [];
 			$cacheItem['instance'] = $file;
