@@ -197,6 +197,9 @@ class Storage extends Common {
 	public function stat($path) {
 		$serverUrl = $this->formatPath($path);
 		try {
+			if($path === '' || $path === '/') {
+				return $this->statForDocumentLibrary();
+			}
 			$file = $this->getFileOrFolder($serverUrl);
 		} catch (\Exception $e) {
 			return false;
@@ -230,6 +233,33 @@ class Storage extends Common {
 		// If we do not get a mtime from SP, we treat it as an error
 		// thus returning false, according to PHP documentation on stat()
 		return false;
+	}
+
+	protected function statForDocumentLibrary() {
+		try {
+			$dLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
+			$mtimeValue = (string)$dLib->getProperty('LastItemModifiedDate');
+		} catch (NotFoundException $e) {
+			\OC::$server->getLogger()->logException($e);
+			return false;
+		}
+
+		if($mtimeValue === '') {
+			// SP2013 does not provide an mtime.
+			$timestamp = time();
+		} else {
+			$mtime = new \DateTime($mtimeValue);
+			$timestamp = $mtime->getTimestamp();
+			error_log('Document Library mtime found ');
+		}
+
+		return [
+			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
+			'size'  => FileInfo::SPACE_UNKNOWN,
+			'mtime' => $timestamp,
+			// no property in SP 2013 & 2016, other storages do the same
+			'atime' => time(),
+		];
 	}
 
 	/**

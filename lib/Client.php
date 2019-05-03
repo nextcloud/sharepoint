@@ -443,6 +443,26 @@ class Client {
 		return $lists->getData();
 	}
 
+	public function getDocumentLibrary(string $documentLibrary):SPList {
+		static $list = null;
+		if($list instanceof SPList) {
+			return $list;
+		}
+
+		$this->ensureConnection();
+		$title = substr($documentLibrary, strrpos($documentLibrary, '/') + 1);
+		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
+		$this->loadAndExecute($lists);
+		if($lists instanceof SPList) {
+			$list = $lists;
+			return $list;
+		}
+		if($lists->getCount() === 0) {
+			throw new NotFoundException('No list found');
+		}
+		throw new NotFoundException('Too many lists found');
+	}
+
 	/**
 	 * shortcut for querying a provided object from SP
 	 *
