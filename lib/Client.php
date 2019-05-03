@@ -366,7 +366,7 @@ class Client {
 		$fileCollection = $folder->getFiles();
 
 		$this->context->load($folderCollection, self::DEFAULT_PROPERTIES);
-		$this->context->load($fileCollection, self::DEFAULT_PROPERTIES);
+		$this->context->load($fileCollection, array_merge(self::DEFAULT_PROPERTIES, [Storage::SP_PROPERTY_URL]));
 		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];

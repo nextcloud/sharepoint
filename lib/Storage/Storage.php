@@ -593,7 +593,7 @@ class Storage extends Common {
 					/** @var  File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
 					if(is_null($url)) {
-						// at least on SP13 $url is null, although it should not
+						// at least on SP13 requesting self::SP_PROPERTY_URL against folders causes an exception
 						continue;
 					}
 					$itemEntry = $this->fileCache->get($url);
