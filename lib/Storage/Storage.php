@@ -207,6 +207,10 @@ class Storage extends Common {
 
 		$size = $file->getProperty(self::SP_PROPERTY_SIZE) ?: FileInfo::SPACE_UNKNOWN;
 		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
+		if($mtimeValue === '') {
+			// if sp2013 ListItemAllFields are fetched automatically
+			$mtimeValue = $file->getListItemAllFields()->getProperty('Modified');
+		}
 		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
 
 		if($mtimeValue === '') {

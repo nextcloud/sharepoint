@@ -162,6 +162,10 @@ class Client {
 	public function fetchFolder($relativeServerPath, array $properties = null) {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
+		if($this->isSP2013) {
+			$allFields = $folder->getListItemAllFields();
+			$this->context->load($allFields);
+		}
 		$this->loadAndExecute($folder, $properties);
 
 		if($this->isSP2013 === null
@@ -172,6 +176,8 @@ class Client {
 				\OC::$server->getLogger()->debug('SP 2013 detected against {path}',
 					['app' => 'sharepoint', 'path' => $relativeServerPath]);
 			}
+			$allFields = $folder->getListItemAllFields();
+			$this->loadAndExecute($allFields);
 		}
 
 		return $folder;
