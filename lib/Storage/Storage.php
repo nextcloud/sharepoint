@@ -616,6 +616,9 @@ class Storage extends Common {
 	 * @throws NotFoundException
 	 */
 	private function getUserPermissions($serverUrl) {
+		// temporarily, cf. https://github.com/vgrem/phpSPO/issues/93#issuecomment-489024363
+		throw new NotFoundException('Could not retrieve permissions');
+
 		$item = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
 		if(isset($entry['permissions'])) {
