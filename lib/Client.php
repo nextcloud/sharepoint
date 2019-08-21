@@ -162,10 +162,8 @@ class Client {
 	public function fetchFolder($relativeServerPath, array $properties = null) {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
-		if($this->isSP2013) {
-			$allFields = $folder->getListItemAllFields();
-			$this->context->load($allFields);
-		}
+		$allFields = $folder->getListItemAllFields();
+		$this->context->load($allFields);
 		$this->loadAndExecute($folder, $properties);
 
 		if($this->isSP2013 === null
@@ -390,26 +388,11 @@ class Client {
 			// it's expensive, we only check folders
 			return false;
 		}
-		if($this->isSP2013) {
-			return in_array(
-				(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
-				$this->knownSP2013SystemFolders
-			);
-		}
 
-		// following code path when $isSP2013 was not set. If everything works
-		// as expected it is at least not likely to end up here. Otherwise,
-		// we can add a check.
-
-		$fields = $file->getListItemAllFields();
-		if ($fields->getProperties() === []) {
-			$this->loadAndExecute($fields, ['Id']);
-		}
-		$id = $fields->getProperty('Id');
-		// avoids listing hidden "Forms" folder (and its contents).
-		// Have not found a different mechanism to detect whether
-		// a (file or= folder is a system folder.
-		return $id === null;
+		return in_array(
+			(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
+			$this->knownSP2013SystemFolders
+		);
 	}
 
 	/**
@@ -456,11 +439,13 @@ class Client {
 		}
 
 		$this->ensureConnection();
-		$title = substr($documentLibrary, strrpos($documentLibrary, '/') + 1);
-		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
+		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
+		$lists = $this->context->getWeb()->getLists()->getByTitle(rawurlencode($title));
 		$this->loadAndExecute($lists);
 		if($lists instanceof SPList) {
 			$list = $lists;
+			$rFolder = $list->getRootFolder();
+			$this->loadAndExecute($rFolder);
 			return $list;
 		}
 		if($lists->getCount() === 0) {
@@ -496,8 +481,12 @@ class Client {
 		if(!is_string($this->credentials['password']) || empty($this->credentials['password'])) {
 			throw new \InvalidArgumentException('No password given');
 		}
-		$this->authContext = $this->contextsFactory->getAuthContext($this->credentials['user'], $this->credentials['password']);
-		$this->authContext->AuthType = CURLAUTH_NTLM;		# Basic auth does not work somehow…
+		/*$this->authContext = $this->contextsFactory->getAuthContext($this->credentials['user'], $this->credentials['password']);
+		$this->authContext->AuthType = CURLAUTH_NTLM;		# Basic auth does not work somehow…*/
+
+		$this->authContext = new AuthenticationContext($this->sharePointUrl);
+		$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
+
 		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
 		# Auth is not triggered yet. This will happen when something is requested from SharePoint (on demand)
 	}

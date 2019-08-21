@@ -676,7 +676,9 @@ class Storage extends Common {
 	 */
 	private function formatPath($path) {
 		$path = trim($path, '/');
-		$serverUrl = '/' . $this->documentLibrary;
+		$docLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
+		$docLib->getRootFolder()->getProperty('ServerRelativeUrl');
+		$serverUrl = $docLib->getRootFolder()->getProperty('ServerRelativeUrl');
 		if($path !== '') {
 			$serverUrl .= '/' . $path;
 		}
