@@ -1,0 +1,17 @@
+[package]
+exclude = [
+        ".drone.yml",
+        ".git",
+        ".github",
+        "Makefile",
+        ".scrutinizer.yml",
+        ".tx",
+        "krankerl.toml",
+        "screenshots",
+        "tests",
+        ".gitignore",
+]
+
+before_cmds = [
+
+]
