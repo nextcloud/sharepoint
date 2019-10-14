@@ -32,6 +32,7 @@ use Office365\PHP\Client\SharePoint\File;
 use Office365\PHP\Client\SharePoint\FileCollection;
 use Office365\PHP\Client\SharePoint\Folder;
 use Office365\PHP\Client\SharePoint\FolderCollection;
+use Office365\PHP\Client\SharePoint\ListItem;
 use Office365\PHP\Client\SharePoint\Web;
 use Test\TestCase;
 
@@ -101,7 +102,12 @@ class SharePointClientTest extends TestCase {
 			->method('getAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
+		$listItemAllFieldsMock = $this->createMock(ListItem::class);
+
 		$folderMock = $this->createMock(Folder::class);
+		$folderMock->expects($this->any())
+			->method('getListItemAllFields')
+			->willReturn($listItemAllFieldsMock);
 
 		$webMock = $this->createMock(Web::class);
 		$webMock->expects($this->never())
@@ -115,13 +121,12 @@ class SharePointClientTest extends TestCase {
 		$clientContextMock->expects($this->once())
 			->method('getWeb')
 			->willReturn($webMock);
-		$clientContextMock->expects($this->once())
-			->method('load')
-			->withConsecutive([$folderMock, $properties]);
-		$clientContextMock->expects($this->once())
+		$clientContextMock->expects($this->atLeastOnce())
+			->method('load');
+		$clientContextMock->expects($this->atLeastOnce())
 			->method('executeQuery');
 
-		$this->contextsFactory->expects($this->once())
+		$this->contextsFactory->expects($this->atLeastOnce())
 			->method('getClientContext')
 			->willReturn($clientContextMock);
 
@@ -312,10 +317,15 @@ class SharePointClientTest extends TestCase {
 			$itemClass = File::class;
 		}
 
+		$listItemAllFieldsMock = $this->createMock(ListItem::class);
+
 		$itemMock = $this->createMock($itemClass);
 		$itemMock->expects($this->once())
 			->method($spRenameMethod)
 			->with($spRenameParameter);
+		$itemMock->expects($this->any())
+			->method('getListItemAllFields')
+			->willReturn($listItemAllFieldsMock);
 
 		$this->contextsFactory->expects($this->once())
 			->method('getAuthContext')
@@ -336,7 +346,7 @@ class SharePointClientTest extends TestCase {
 			->method('getClientContext')
 			->willReturn($clientContextMock);
 
-		$clientContextMock->expects($this->exactly(2))
+		$clientContextMock->expects($this->atLeast(2))
 			->method('executeQuery');
 
 		$this->client->rename($path, $newPath);

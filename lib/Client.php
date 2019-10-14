@@ -162,6 +162,10 @@ class Client {
 	public function fetchFolder($relativeServerPath, array $properties = null) {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
+		if(true || $this->isSP2013) {
+			$allFields = $folder->getListItemAllFields();
+			$this->context->load($allFields);
+		}
 		$this->loadAndExecute($folder, $properties);
 
 		if($this->isSP2013 === null
@@ -172,6 +176,8 @@ class Client {
 				\OC::$server->getLogger()->debug('SP 2013 detected against {path}',
 					['app' => 'sharepoint', 'path' => $relativeServerPath]);
 			}
+			$allFields = $folder->getListItemAllFields();
+			$this->loadAndExecute($allFields);
 		}
 
 		return $folder;
@@ -360,7 +366,7 @@ class Client {
 		$fileCollection = $folder->getFiles();
 
 		$this->context->load($folderCollection, self::DEFAULT_PROPERTIES);
-		$this->context->load($fileCollection, self::DEFAULT_PROPERTIES);
+		$this->context->load($fileCollection, array_merge(self::DEFAULT_PROPERTIES, [Storage::SP_PROPERTY_URL]));
 		$this->context->executeQuery();
 
 		$collections = ['folders' => $folderCollection, 'files' => $fileCollection];
@@ -384,7 +390,7 @@ class Client {
 			// it's expensive, we only check folders
 			return false;
 		}
-		if($this->isSP2013) {
+		if(true || $this->isSP2013) {
 			return in_array(
 				(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
 				$this->knownSP2013SystemFolders
@@ -443,6 +449,28 @@ class Client {
 		return $lists->getData();
 	}
 
+	public function getDocumentLibrary(string $documentLibrary):SPList {
+		static $list = null;
+		if($list instanceof SPList) {
+			return $list;
+		}
+
+		$this->ensureConnection();
+		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
+		$lists = $this->context->getWeb()->getLists()->getByTitle(rawurlencode($title));
+		$this->loadAndExecute($lists);
+		if($lists instanceof SPList) {
+			$list = $lists;
+			$rFolder = $list->getRootFolder();
+			$this->loadAndExecute($rFolder);
+			return $list;
+		}
+		if($lists->getCount() === 0) {
+			throw new NotFoundException('No list found');
+		}
+		throw new NotFoundException('Too many lists found');
+	}
+
 	/**
 	 * shortcut for querying a provided object from SP
 	 *
@@ -470,8 +498,12 @@ class Client {
 		if(!is_string($this->credentials['password']) || empty($this->credentials['password'])) {
 			throw new \InvalidArgumentException('No password given');
 		}
-		$this->authContext = $this->contextsFactory->getAuthContext($this->credentials['user'], $this->credentials['password']);
-		$this->authContext->AuthType = CURLAUTH_NTLM;		# Basic auth does not work somehow…
+		/*$this->authContext = $this->contextsFactory->getAuthContext($this->credentials['user'], $this->credentials['password']);
+		$this->authContext->AuthType = CURLAUTH_NTLM;		# Basic auth does not work somehow…*/
+
+		$this->authContext = new AuthenticationContext($this->sharePointUrl);
+		$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
+
 		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
 		# Auth is not triggered yet. This will happen when something is requested from SharePoint (on demand)
 	}
