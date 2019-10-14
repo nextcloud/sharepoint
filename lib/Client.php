@@ -457,7 +457,7 @@ class Client {
 
 		$this->ensureConnection();
 		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
-		$lists = $this->context->getWeb()->getLists()->getByTitle(rawurlencode($title));
+		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
 		$this->loadAndExecute($lists);
 		if($lists instanceof SPList) {
 			$list = $lists;
