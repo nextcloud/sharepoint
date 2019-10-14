@@ -1,13 +1,5 @@
 {
     "require": {
-        "cweagans/composer-patches": "~1.0",
-        "vgrem/php-spo": "dev-master"
-    },
-    "extra": {
-        "patches": {
-            "vgrem/php-spo": {
-                "Remove proccessed queries from queue": "https://patch-diff.githubusercontent.com/raw/vgrem/phpSPO/pull/63.patch"
-            }
-        }
+        "vgrem/php-spo": "^2.2"
     }
 }
