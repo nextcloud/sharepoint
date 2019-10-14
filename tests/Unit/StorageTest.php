@@ -113,8 +113,6 @@ class SharePointTest extends TestCase {
 
 	public function pathProvider() {
 		return [
-			['/', null],
-			['', null],
 			['Paperwork', null],
 			['Paperwork/', null],
 			['/Paperwork/', null],
@@ -155,6 +153,39 @@ class SharePointTest extends TestCase {
 			->method('fetchFileOrFolder')
 			->with($serverPath)
 			->willReturn($folderMock);
+
+		$data = $this->storage->stat($path);
+
+		$this->assertSame($mtime->getTimestamp(), $data['mtime']);
+		$this->assertSame($size, $data['size']);
+		$this->assertTrue($mtime->getTimestamp() < $data['atime']);
+	}
+
+	public function testStatDocumentLibrary() {
+		$path = '';
+		$returnSize = null;
+
+		$mtime = new \DateTime(null, new \DateTimeZone('Z'));
+		$mtime->sub(new \DateInterval('P2D'));
+		// a SP time string looks like: 2017-03-22T16:17:23Z
+		$returnMTime = $mtime->format('o-m-d\TH:i:se');
+		$size = FileInfo::SPACE_UNKNOWN;
+
+		$dLibMock = $this->createMock(SPList::class);
+		$dLibMock->expects($this->once())
+			->method('getProperty')
+			->with('LastItemModifiedDate')
+			->willReturn($returnMTime);
+
+		$serverPath = '/' . $this->documentLibraryTitle;
+		if(trim($path, '/') !== '') {
+			$serverPath .= '/' . trim($path, '/');
+		}
+
+		$this->client->expects($this->once())
+			->method('getDocumentLibrary')
+			->with($this->documentLibraryTitle)
+			->willReturn($dLibMock);
 
 		$data = $this->storage->stat($path);
 
