@@ -28,31 +28,23 @@ class RequestOptions
         $this->Verbose = false;
         $this->SSLVersion = null;
         $this->StreamHandle = null;
+        $this->Data = $data;
+        $this->ConnectTimeout = null;
     }
 
     public function toArray()
     {
-        return [
-            'Url' => $this->Url,
-            'Method' => $this->Method,
-            'Headers' => $this->Headers,
-            'Data' => $this->Data,
-            'IncludeBody' => $this->IncludeBody,
-            'IncludeHeaders' => $this->IncludeHeaders,
-            'AuthType' => $this->AuthType,
-            'Verbose' => $this->Verbose,
-            'UserCredentials' => $this->UserCredentials,
-            'SSLVersion' => $this->SSLVersion,
-            'StreamHandle' => $this->StreamHandle,
-        ];
+        return get_object_vars($this);
     }
 
     public function addCustomHeader($name, $value)
     {
-        if (is_null($this->Headers))
+        if (is_null($this->Headers)) {
             $this->Headers = array();
-        if (!array_key_exists($name, $this->Headers))
+        }
+        if (!array_key_exists($name, $this->Headers)) {
             $this->Headers[$name] = $value;
+        }
     }
 
     public function getRawHeaders()
@@ -75,7 +67,7 @@ class RequestOptions
 
 
     /**
-     * @var bool
+     * @var string
      */
     public $Method;
 
@@ -99,7 +91,7 @@ class RequestOptions
 
 
     /**
-     * Do the download request without getting the body
+     * Do the request without getting the response
      * @var bool
      */
     public $IncludeBody;
@@ -134,4 +126,15 @@ class RequestOptions
      */
     public $StreamHandle;
 
+
+    /**
+     * @var string
+     */
+    public $Proxy;
+
+
+    /**
+     * @var ?int
+     */
+    public $ConnectTimeout;
 }

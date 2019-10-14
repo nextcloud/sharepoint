@@ -2,34 +2,53 @@
 
 
 namespace Office365\PHP\Client\Runtime;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\OData\ODataSerializerContext;
 
 
 /**
- * Represents a primitive property value.
+ * Represents a Service Operation result value.
  */
-class ClientResult extends ODataPayload
+class ClientResult
 {
 
-    /**
-     * Converts JSON into payload property
-     * @param mixed $json
-     */
-    function convertFromJson($json)
+    function __construct($returnValue=null)
     {
-        $this->Value = $json;
+        $this->value = $returnValue;
     }
 
-    function getEntityTypeName()
-    {
+    /**
+     * @return null|string
+     */
+    public function getType(){
+        if(!is_null($this->value))
+        {
+            if($this->value instanceof IEntityType)
+                return $this->value->getTypeName();
+            return basename(get_class($this->value));
+        }
         return null;
     }
 
 
     /**
-     * @var string
+     * @param $json
+     * @param ODataSerializerContext $serializationContext
      */
-    public $Value;
+    public function fromJson($json, ODataSerializerContext $serializationContext)
+    {
+        $serializationContext->map($json, $this->value);
+    }
+
+
+    public function getValue(){
+        return $this->value;
+    }
+
+    /**
+     * @var mixed $value
+     */
+    protected $value;
+
 
 
 

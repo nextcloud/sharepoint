@@ -1,9 +1,9 @@
 ﻿### About
-The library provides a Office 365 REST client for PHP applications. It allows to performs CRUD operations against Office 365 resources via an REST/OData based API. 
+Office 365 Library for PHP. It allows to performs CRUD operations against Office 365 resources via an REST/OData based API. 
 
 #### The list of supported Office 365 REST APIs:
 
--   [SharePoint REST API](https://msdn.microsoft.com/en-us/library/office/jj860569.aspx) (_supported_ versions: [SharePoint 2013](https://msdn.microsoft.com/library/office/jj860569(v=office.15).aspx), SharePoint 2016, SharePoint Online and OneDrive for Business)
+-   [SharePoint REST API](https://msdn.microsoft.com/en-us/library/office/jj860569.aspx) Supported versions: [SharePoint On-Premises (2013/2016/2019)](https://msdn.microsoft.com/library/office/jj860569(v=office.15).aspx), SharePoint Online and OneDrive for Business
 -   [Outlook REST API](https://msdn.microsoft.com/en-us/office/office365/api/use-outlook-rest-api#DefineOutlookRESTAPI) 
     -   [Outlook Contacts REST API](https://msdn.microsoft.com/en-us/office/office365/api/contacts-rest-operations)
     -   [Outlook Calendar REST API](https://msdn.microsoft.com/en-us/office/office365/api/calendar-rest-operations)
@@ -12,7 +12,14 @@ The library provides a Office 365 REST client for PHP applications. It allows to
 
 ### Status
 
+[![Total Downloads](https://poser.pugx.org/vgrem/php-spo/downloads)](https://packagist.org/packages/vgrem/php-spo)
+[![Latest Stable Version](https://poser.pugx.org/vgrem/php-spo/v/stable)](https://packagist.org/packages/vgrem/php-spo)
 [![Build Status](https://travis-ci.org/vgrem/phpSPO.svg?branch=master)](https://travis-ci.org/vgrem/phpSPO)
+[![License](https://poser.pugx.org/vgrem/php-spo/license)](https://packagist.org/packages/vgrem/php-spo)
+
+<!---
+[![PayPal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=J99W9EM829BQC)
+-->
 
 ### Installation
 
@@ -68,7 +75,7 @@ The following examples demonstrates how to perform basic CRUD operations against
 
 Example 1. How to read SharePoint list items
 
-````
+```php
 
 $authCtx = new AuthenticationContext($Url);
 $authCtx->acquireTokenForUser($UserName,$Password); //authenticate
@@ -82,39 +89,39 @@ $ctx->executeQuery(); //submit query to SharePoint Online REST service
 foreach( $items->getData() as $item ) {
     print "Task: '{$item->Title}'\r\n";
 }
-````
+```
 
 
 Example 2. How to create SharePoint list item:
-````
+```php
 $listTitle = 'Tasks';
 $list = $ctx->getWeb()->getLists()->getByTitle($listTitle);
 $itemProperties = array('Title' => 'Order Approval', 'Body' => 'Order approval task','__metadata' => array('type' => 'SP.Data.TasksListItem'));
 $item = $list->addItem($itemProperties);
 $ctx->executeQuery();
 print "Task '{$item->Title}' has been created.\r\n";
-````
+```
 
 Example 3. How to delete a SharePoint list item:
-````
+```php
 $listTitle = 'Tasks';
 $itemToDeleteId = 1;
 $list = $ctx->getWeb()->getLists()->getByTitle($listTitle);
 $listItem = $list->getItemById($itemToDeleteId);
 $listItem->deleteObject();
 $ctx->executeQuery();
-````
+```
 
 Example 4. How to update SharePoint list item:
-````
+```php
 $listTitle = 'Tasks';
 $itemToUpdateId = 1;
 $list = $ctx->getWeb()->getLists()->getByTitle($listTitle);
 $listItem = $list->getItemById($itemId);
-$itemProperties = array('PercentComplete' => 1);
-$listItem->update($itemProperties);
+$listItem->setProperty('PercentComplete',1);
+$listItem->update();
 $ctx->executeQuery();
-````
+```
 
 
 
@@ -124,7 +131,7 @@ The following examples demonstrates how to read, create and send messages via Ou
 
 Example 1. How to create a draft message
 
-````
+```php
 
 $authCtx = new NetworkCredentialContext($UserName,$Password); //using Basic Auth scheme (for v1 API only)
 $ctx = new OutlookClient($authCtx); //initialize OutlookServices client
@@ -136,12 +143,12 @@ $message->ToRecipients = array(
      new Recipient(new EmailAddress("Jon Doe","jdoe@contoso.onmicrosoft.com"))
 );
 $ctx->executeQuery();
-````
+```
 
 
 Example 2. How to get messages
 
-````
+```php
 
 $authCtx = new NetworkCredentialContext($UserName,$Password); //using Basic Auth scheme (for v1 API only)
 $ctx = new OutlookClient($authCtx); //initialize OutlookServices client
@@ -152,12 +159,12 @@ $ctx->executeQuery();
 foreach ($messages->getData() as $curMessage){
    print $curMessage->Subject;
 }
-````
+```
 
 
 Example 3. How to send a message
 
-````
+```php
 
 $authCtx = new NetworkCredentialContext($UserName,$Password); //using Basic Auth scheme (for v1 API only)
 $ctx = new OutlookClient($authCtx); //initialize OutlookServices client
@@ -170,13 +177,5 @@ $message->ToRecipients = array(
 );
 $ctx->getMe()->sendEmail($message,false); //send a Message
 $ctx->executeQuery();
-````
-
-
-## Changelog
-
-1.0.0 - May 23st, 2014
-- Initial release.
- 
-2.0.0 - February 14, 2016
-- `AuthenticationContext` and `ClientContext` classes have been introduced.  
+```
+  

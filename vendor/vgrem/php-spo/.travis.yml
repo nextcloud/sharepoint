@@ -1,5 +1,7 @@
 language: php
 
+dist: trusty
+
 # list any PHP version you want to test against
 php:
   # using major version aliases
@@ -12,20 +14,24 @@ php:
   - 5.6
   # aliased to a recent 7.x version
   - 7.0
-  # aliased to a recent hhvm version
-  - hhvm
+  - 7.1
+  - 7.2
+  - 7.3
 
+install:
+  - if [[ $TRAVIS_PHP_VERSION > '7.1' ]]; then wget -O ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit https://phar.phpunit.de/phpunit-7.phar; fi
+  - if [[ $TRAVIS_PHP_VERSION > '7.1' ]]; then chmod 755 ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit; fi
 
 # optionally set up exclutions and allowed failures in the matrix
 matrix:
-  exclude:
-    - php: 5.5
-    - php: 5.6
-    - php: 7.0
   allow_failures:
-      - php: hhvm
+      - php: 5.5
+      - php: 5.6
+      - php: 7.0
+      - php: 7.1
 
 before_script:
+  - phpunit --version
   - composer self-update
   - composer install --prefer-source --no-interaction --dev
 

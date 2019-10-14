@@ -1,10 +1,9 @@
 <?php
 
 namespace Office365\PHP\Client\SharePoint;
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
-use Office365\PHP\Client\Runtime\OData\ODataPayloadKind;
+use Office365\PHP\Client\Runtime\ResourcePathServiceOperation;
 
 
 /**
@@ -22,8 +21,8 @@ class FileCollection extends ClientObjectCollection
     public function add(FileCreationInformation $fileCreationInformation)
     {
         $file = new File($this->getContext(),$this->getResourcePath());
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "add",
             array("overwrite"=>$fileCreationInformation->Overwrite,"url"=>rawurlencode($fileCreationInformation->Url)),
             $fileCreationInformation->Content
@@ -43,8 +42,8 @@ class FileCollection extends ClientObjectCollection
     public function addTemplateFile($urlOfFile,$templateFileType)
     {
         $file = new File($this->getContext(),$this->getResourcePath());
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "addTemplateFile",
             array(
                 "urlOfFile" => $urlOfFile,
@@ -53,6 +52,18 @@ class FileCollection extends ClientObjectCollection
         );
         $this->getContext()->addQuery($qry,$file);
         return $file;
+    }
+
+
+    /**
+     * @param $serverRelativeUrl
+     * @return File
+     */
+    public function getByUrl($serverRelativeUrl){
+        $path = new ResourcePathServiceOperation($this->getContext(),$this->getResourcePath(),"getbyurl",array(
+            rawurlencode($serverRelativeUrl)
+        ));
+        return new File($this->getContext(),$path);
     }
 
 }

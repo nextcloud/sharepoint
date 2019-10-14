@@ -4,8 +4,8 @@
 namespace Office365\PHP\Client\OutlookServices;
 
 
-use Office365\PHP\Client\Runtime\ClientActionDeleteEntity;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ClientObject;
 use ReflectionObject;
 use ReflectionProperty;
@@ -13,14 +13,12 @@ use ReflectionProperty;
 class OutlookEntity extends ClientObject
 {
 
-
-
     /**
      * Updates a resource
      */
     public function update()
     {
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
@@ -30,7 +28,7 @@ class OutlookEntity extends ClientObject
      */
     public function deleteObject()
     {
-        $qry = new ClientActionDeleteEntity($this);
+        $qry = new DeleteEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
@@ -42,39 +40,44 @@ class OutlookEntity extends ClientObject
 
     public function ensureTypeAnnotation()
     {
-        $typeName = $this->getEntityTypeName();
+        $typeName = $this->getTypeName();
         $this->addAnnotation("type","#Microsoft.OutlookServices.$typeName");
     }
 
 
-    function getChangedProperties()
+
+
+
+    function getProperties($flag=SCHEMA_ALL_PROPERTIES)
     {
-        $properties = parent::getChangedProperties();
+        $result = parent::getProperties($flag);
+        //include annotations
+        foreach ($this->annotations as $key => $val) {
+            $result[$key] = $val;
+        }
+
         $reflection = new ReflectionObject($this);
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $p) {
             $val = $p->getValue($this);
             if (!is_null($val)) {
-                $properties[$p->name] = $val;
+                $result[$p->name] = $val;
             }
         }
-        foreach ($this->annotations as $key => $val) {
-            $properties[$key] = $val;
-        }
-        return $properties;
+        return $result;
     }
 
 
     function setProperty($name, $value, $persistChanges = true)
     {
-        if($name == "Id"){
+        $normalizedName = ucfirst($name);
+        if($normalizedName == "Id"){
             if(is_null($this->getResourcePath()))
                 $this->setResourceUrl($this->parentCollection->getResourcePath()->toUrl() . "/" . $value);
-            $this->{$name} = $value;
+            $this->{$normalizedName} = $value;
         }
         else
-            parent::setProperty($name, $value, $persistChanges);
+            parent::setProperty($normalizedName, $value, $persistChanges);
     }
-
 
 
     /**

@@ -5,10 +5,8 @@
 
 namespace Office365\PHP\Client\SharePoint;
 
-
-use Office365\PHP\Client\Runtime\ClientActionCreateEntity;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
 use Office365\PHP\Client\Runtime\ResourcePathServiceOperation;
 
 class FieldCollection extends ClientObjectCollection
@@ -21,8 +19,8 @@ class FieldCollection extends ClientObjectCollection
      */
     public function add(FieldCreationInformation $parameters)
     {
-        $field = new Field($this->getContext(),$this->getResourcePath());
-        $qry = new ClientActionCreateEntity($this,$parameters);
+        $field = new Field($this->getContext());
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),null,null,$parameters);
         $this->getContext()->addQuery($qry,$field);
         $this->addChild($field);
         return $field;

@@ -6,6 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'cweagans\\Composer\\' => array($vendorDir . '/cweagans/composer-patches/src'),
     'Office365\\PHP\\Client\\' => array($vendorDir . '/vgrem/php-spo/src'),
 );

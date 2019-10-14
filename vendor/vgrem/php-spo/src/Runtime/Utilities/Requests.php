@@ -19,14 +19,15 @@ class Requests
 
     protected static $history = [];
 
-	public static function execute(RequestOptions $options)
+	public static function execute(RequestOptions $options,&$responseInfo=array())
 	{
         $call = [];
         $call['request'] = $options->toArray();
 
 		$ch = Requests::init($options);
         $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $responseInfo["HttpCode"] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $responseInfo["ContentType"] = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 
         $call['response'] = $response;
 
@@ -48,11 +49,11 @@ class Requests
         return Requests::execute($options);
     }
 
-    public static function head($url,$headers)
+    public static function head($url,$headers,$includeBody = false)
     {
         $options = new RequestOptions($url);
         $options->IncludeHeaders = true;
-        $options->IncludeBody = false;
+        $options->IncludeBody = $includeBody;
         $options->Headers = $headers;
         return Requests::execute($options);
     }
@@ -100,12 +101,15 @@ class Requests
         //include body in response
         curl_setopt($ch, CURLOPT_NOBODY, !$options->IncludeBody);
         //Set method
-        if($options->Method == HttpMethod::Post)
-            curl_setopt($ch, CURLOPT_POST, 1);
-        else if($options->Method == HttpMethod::Patch)
+        if($options->Method == HttpMethod::Post) {
+           curl_setopt($ch, CURLOPT_POST, 1);
+        } else if($options->Method == HttpMethod::Patch) {
            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $options->Method);
-        else if($options->Method == HttpMethod::Delete)
+        } else if($options->Method == HttpMethod::Put) {
+           curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $options->Method);
+        } else if($options->Method == HttpMethod::Delete) {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $options->Method);
+        }
         //set Post Body
         if(isset($options->Data))
             curl_setopt($ch, CURLOPT_POSTFIELDS, $options->Data);
@@ -113,7 +117,7 @@ class Requests
             $opt = $options->Method === HttpMethod::Get ? CURLOPT_FILE : CURLOPT_INFILE;
             curl_setopt($ch, $opt, $options->StreamHandle);
         }
-        $options->addCustomHeader("content-length",strlen($options->Data));
+        $options->addCustomHeader("Content-Length",strlen($options->Data));
         //custom HTTP headers
         if($options->Headers)
             curl_setopt($ch, CURLOPT_HTTPHEADER, $options->getRawHeaders());
@@ -128,6 +132,8 @@ class Requests
             curl_setopt($ch,CURLOPT_HTTPAUTH, $options->AuthType);
         if(!is_null($options->UserCredentials))
             curl_setopt($ch,CURLOPT_USERPWD, $options->UserCredentials->toString());
+        if(!is_null($options->ConnectTimeout))
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $options->ConnectTimeout);
 
         return $ch;
     }

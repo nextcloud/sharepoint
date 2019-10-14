@@ -1,13 +1,11 @@
 <?php
     
 namespace Office365\PHP\Client\SharePoint;
-use Office365\PHP\Client\Runtime\ClientActionCreateEntity;
-use Office365\PHP\Client\Runtime\ClientActionDeleteEntity;
-use Office365\PHP\Client\Runtime\ClientActionInvokeGetMethod;
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
-use Office365\PHP\Client\Runtime\FormatType;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\CreateEntityQuery;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\InvokeMethodQuery;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ResourcePathEntity;
 
 
@@ -20,11 +18,9 @@ class SPList extends SecurableObject
      * The recommended way to add a list item is to send a POST request to the ListItemCollection resource endpoint, as shown in ListItemCollection request examples.
      * @param array $listItemCreationInformation Creation information for a List item
      * @return ListItem List Item resource
-     * @throws \Exception
      */
     public function addItem(array $listItemCreationInformation)
     {
-
         $items = new ListItemCollection($this->getContext(),
             new ResourcePathEntity($this->getContext(),$this->getResourcePath(),"items"));
         $listItem = new ListItem($this->getContext());
@@ -33,7 +29,7 @@ class SPList extends SecurableObject
         foreach($listItemCreationInformation as $key => $value){
             $listItem->setProperty($key,$value);
         }
-        $qry = new ClientActionCreateEntity($items,$listItem);
+        $qry = new CreateEntityQuery($listItem);
         $this->getContext()->addQuery($qry,$listItem);
         return $listItem;
     }
@@ -42,7 +38,6 @@ class SPList extends SecurableObject
      * Returns the list item with the specified list item identifier.
      * @param integer $id  SPList Item id
      * @return ListItem  List Item resource
-     * @throws \Exception
      */
     public function getItemById($id)
     {
@@ -62,11 +57,11 @@ class SPList extends SecurableObject
     {
         $items = new ListItemCollection($this->getContext(),new ResourcePathEntity($this->getContext(),$this->getResourcePath(),"items"));
         if(isset($camlQuery)){
-            $qry = new ClientActionInvokePostMethod(
-                $this,
+            $qry = new InvokePostMethodQuery(
+                $this->getResourcePath(),
                 "GetItems",
                 null,
-                $camlQuery->toQueryPayload()
+                $camlQuery
             );
             $this->getContext()->addQuery($qry,$items);
         }
@@ -79,7 +74,7 @@ class SPList extends SecurableObject
      */
     public function update()
     {
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
@@ -88,7 +83,7 @@ class SPList extends SecurableObject
      */
     public function deleteObject()
     {
-        $qry = new ClientActionDeleteEntity($this);
+        $qry = new DeleteEntityQuery($this);
         $this->getContext()->addQuery($qry);
         $this->removeFromParentCollection();
     }
@@ -98,13 +93,12 @@ class SPList extends SecurableObject
      * Gets the set of permissions for the specified user
      * @param string $loginName
      * @return BasePermissions
-     * @throws \Exception
      */
     public function getUserEffectivePermissions($loginName)
     {
         $permissions = new BasePermissions();
-        $qry = new ClientActionInvokeGetMethod(
-            $this,
+        $qry = new InvokeMethodQuery(
+            $this->getResourcePath(),
             "GetUserEffectivePermissions",
             array(rawurlencode($loginName))
         );
@@ -119,14 +113,13 @@ class SPList extends SecurableObject
      */
     public function getListItemChangesSinceToken(ChangeLogItemQuery $query)
     {
-        $result = new ListItemCollection($this->getContext());
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $result = new ListItemCollection($this->getContext(),null);
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "getListItemChangesSinceToken",
             null,
-            $query->toQueryPayload()
+            $query
         );
-        //$qry->ResponsePayloadFormatType = FormatType::Xml;
         $this->getContext()->addQuery($qry, $result);
         return $result;
     }
@@ -138,13 +131,13 @@ class SPList extends SecurableObject
      */
     public function getChanges(ChangeQuery $query)
     {
-        $changes = new ChangeCollection($this->getContext());
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "GetChanges",
             null,
-            $query->toQueryPayload()
+            $query
         );
+        $changes = new ChangeCollection($this->getContext(),$qry->getResourcePath());
         $this->getContext()->addQuery($qry,$changes);
         return $changes;
     }
@@ -199,7 +192,7 @@ class SPList extends SecurableObject
     public function getInformationRightsManagementSettings()
     {
         if(!$this->isPropertyAvailable('InformationRightsManagementSettings')){
-            $this->setProperty("InformationRightsManagementSettings", new InformationRightsManagementSettings($this->getContext(),$this->getResourcePath(), "InformationRightsManagementSettings"));
+            $this->setProperty("InformationRightsManagementSettings", new InformationRightsManagementSettings());
         }
         return $this->getProperty("InformationRightsManagementSettings");
     }
@@ -216,7 +209,7 @@ class SPList extends SecurableObject
         return $this->getProperty("ParentWeb");
     }
 
-    public function getEntityTypeName(){
+    public function getTypeName(){
         return "SP.List";
     }
 }

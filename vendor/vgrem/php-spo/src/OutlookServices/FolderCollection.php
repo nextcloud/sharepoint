@@ -3,7 +3,7 @@
 
 namespace Office365\PHP\Client\OutlookServices;
 
-use Office365\PHP\Client\Runtime\ClientActionCreateEntity;
+use Office365\PHP\Client\Runtime\CreateEntityQuery;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
 
 class FolderCollection extends ClientObjectCollection
@@ -16,10 +16,10 @@ class FolderCollection extends ClientObjectCollection
      */
     public function createFolder($displayName) {
         $folder = new MailFolder($this->getContext(), $this->getResourcePath());
-        $folder->setProperty('DisplayName', $displayName);
-        $qry = new ClientActionCreateEntity($this, $folder);
-        $this->getContext()->addQuery($qry, $folder);
         $this->addChild($folder);
+        $folder->setProperty('DisplayName', $displayName);
+        $qry = new CreateEntityQuery($folder);
+        $this->getContext()->addQuery($qry, $folder);
         return $folder;
     }
 

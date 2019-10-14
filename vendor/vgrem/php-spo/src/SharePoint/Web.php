@@ -1,13 +1,14 @@
 <?php
 
 namespace Office365\PHP\Client\SharePoint;
-use Office365\PHP\Client\Runtime\ClientActionDeleteEntity;
-use Office365\PHP\Client\Runtime\ClientActionInvokeGetMethod;
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
-use Office365\PHP\Client\Runtime\ClientActionReadEntity;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
-use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\ClientValueObjectCollection;
+use Office365\PHP\Client\Runtime\ClientAction;
+use Office365\PHP\Client\Runtime\ClientResult;
+use Office365\PHP\Client\Runtime\ClientRuntimeContext;
+use Office365\PHP\Client\Runtime\ContextResourcePath;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
+use Office365\PHP\Client\Runtime\OData\ODataMetadataLevel;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ResourcePathEntity;
 use Office365\PHP\Client\Runtime\ResourcePathServiceOperation;
 
@@ -22,15 +23,65 @@ class Web extends SecurableObject
 {
 
 
+    /**
+     * @param ClientRuntimeContext $context
+     * @param string $url
+     * @param boolean $isEditLink
+     * @return ClientResult
+     */
+    public static function createAnonymousLink($context, $url, $isEditLink)
+    {
+        $result = new ClientResult();
+        $rootPath = new ContextResourcePath($context);
+        $qry = new InvokePostMethodQuery($rootPath,
+            "SP.Web.CreateAnonymousLink",
+            null,
+            array(
+                "url" => $url,
+                "isEditLink" => $isEditLink
+            ));
+        if ($context->getSerializerContext()->MetadataLevel == ODataMetadataLevel::Verbose) {
+            $context->getSerializerContext()->RootElement = "CreateAnonymousLink";
+        }
+        $context->addQuery($qry,$result);
+        return $result;
+    }
+
+    /**
+     * @param ClientRuntimeContext $context
+     * @param string $url
+     * @param boolean $isEditLink
+     * @param string $expirationString
+     * @return ClientResult
+     */
+    public static function createAnonymousLinkWithExpiration($context, $url, $isEditLink,$expirationString)
+    {
+        $result = new ClientResult();
+        $rootPath = new ContextResourcePath($context);
+        $qry = new InvokePostMethodQuery($rootPath,
+            "SP.Web.CreateAnonymousLinkWithExpiration",
+            null,
+            array(
+                "url" => $url,
+                "isEditLink" => $isEditLink,
+                "expirationString" => $expirationString
+            ));
+        if ($context->getSerializerContext()->MetadataLevel == ODataMetadataLevel::Verbose) {
+            $context->getSerializerContext()->RootElement = "CreateAnonymousLinkWithExpiration";
+        }
+        $context->addQuery($qry,$result);
+        return $result;
+    }
+
     public function update()
     {
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry,$this);
     }
 
     public function deleteObject()
     {
-        $qry = new ClientActionDeleteEntity($this);
+        $qry = new DeleteEntityQuery($this);
         $this->getContext()->addQuery($qry);
         //$this->removeFromParentCollection();
     }
@@ -43,13 +94,13 @@ class Web extends SecurableObject
      */
     public function getChanges(ChangeQuery $query)
     {
-        $changes = new ChangeCollection($this->getContext());
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "GetChanges",
             null,
-            $query->toQueryPayload()
+            $query
         );
+        $changes = new ChangeCollection($this->getContext(),$qry->getResourcePath());
         $this->getContext()->addQuery($qry,$changes);
         return $changes;
     }
@@ -134,7 +185,7 @@ class Web extends SecurableObject
     
     /**
      * Gets the collection of role definitions for the Web site.
-     * @return RoleAssignmentCollection
+     * @return RoleDefinitionCollection
      */
     public function getRoleDefinitions()
     {
@@ -171,15 +222,15 @@ class Web extends SecurableObject
 
 
     /**
-     * @return ClientValueObjectCollection
+     * @return ClientResult
      */
     public function getSupportedUILanguageIds()
     {
-        $value = new ClientValueObjectCollection("Collection(Edm.Int32)");
-        $value->EntityName = "SupportedUILanguageIds";
-        $qry = new ClientActionReadEntity($this->getResourceUrl() . "/SupportedUILanguageIds");
-        $this->getContext()->addQuery($qry,$value);
-        return $value;
+        $result = new ClientResult();
+        $path = new ResourcePathEntity($this->getContext(),$this->getResourcePath(),"SupportedUILanguageIds");
+        $qry = new ClientAction($path);
+        $this->getContext()->addQuery($qry,$result);
+        return $result;
     }
 
     /**
@@ -248,4 +299,5 @@ class Web extends SecurableObject
             $this->setResourceUrl("Site/openWebById(guid'{$value}')");
         }
     }
+
 }

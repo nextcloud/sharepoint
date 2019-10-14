@@ -3,17 +3,16 @@
 
 namespace Office365\PHP\Client\OutlookServices;
 
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
-use Office365\PHP\Client\Runtime\ClientObject;
+use Office365\PHP\Client\Runtime\ClientValueObject;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
 use Office365\PHP\Client\Runtime\Office365Version;
-use Office365\PHP\Client\Runtime\OperationParameterCollection;
 use Office365\PHP\Client\Runtime\ResourcePathEntity;
 
 /**
  * A user in the system.
  * The Me endpoint is provided as a shortcut for specifying the current user by SMTP address.
  */
-class User extends ClientObject
+class User extends OutlookEntity
 {
 
     /**
@@ -35,6 +34,7 @@ class User extends ClientObject
     /**
      * @param string $folderId
      * @return MailFolder
+     * @throws \Exception
      */
     public function getFolder($folderId)
     {
@@ -51,6 +51,7 @@ class User extends ClientObject
 
     /**
      * @return MailFolder
+     * @throws \Exception
      */
     public function getFolders()
     {
@@ -72,10 +73,10 @@ class User extends ClientObject
      */
     public function sendEmail(Message $message, $saveToSentItems)
     {
-        $payload = new OperationParameterCollection();
-        $payload->add("Message", $message);
-        $payload->add("SaveToSentItems", $saveToSentItems);
-        $action = new ClientActionInvokePostMethod($this, "SendMail", null, $payload);
+        $payload = new ClientValueObject();
+        $payload->setProperty("Message", $message);
+        $payload->setProperty("SaveToSentItems", $saveToSentItems);
+        $action = new InvokePostMethodQuery($this->getResourcePath(), "SendMail",null,$payload);
         $this->getContext()->addQuery($action);
     }
 

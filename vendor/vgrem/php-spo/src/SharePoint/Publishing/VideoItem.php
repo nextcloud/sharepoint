@@ -4,8 +4,8 @@
 namespace Office365\PHP\Client\SharePoint\Publishing;
 
 
-use Office365\PHP\Client\Runtime\ClientActionDeleteEntity;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ClientObject;
 use Office365\PHP\Client\Runtime\HttpMethod;
 use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
@@ -18,13 +18,13 @@ class VideoItem extends ClientObject
 
     public function update()
     {
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
     public function deleteObject()
     {
-        $qry = new ClientActionDeleteEntity($this);
+        $qry = new DeleteEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
@@ -37,7 +37,7 @@ class VideoItem extends ClientObject
         $request->Data = $content;
         if($ctx instanceof ClientContext)
             $ctx->ensureFormDigest($request);
-        $response = $ctx->executeQueryDirect($request);
+        $ctx->executeQueryDirect($request);
     }
 
 
@@ -48,14 +48,13 @@ class VideoItem extends ClientObject
                 $this->setResourceUrl($this->parentCollection->getResourcePath()->toUrl() . "(guid'{$value}')");
             $this->{$name} = $value;
         }
-        else
-            parent::setProperty($name, $value, $persistChanges);
+        parent::setProperty($name, $value, $persistChanges);
     }
 
 
-    public function getEntityTypeName()
+    public function getTypeName()
     {
-        return implode(".",array("SP","Publishing",parent::getEntityTypeName()));
+        return implode(".",array("SP","Publishing",parent::getTypeName()));
     }
 
 

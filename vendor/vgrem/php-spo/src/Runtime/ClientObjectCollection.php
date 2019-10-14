@@ -6,9 +6,9 @@ use Office365\PHP\Client\Runtime\OData\ODataQueryOptions;
 
 
 /**
- * Client objects collection
+ * Client objects collection (represents EntitySet in terms of OData)
  */
-class ClientObjectCollection extends ClientObject
+class ClientObjectCollection extends ClientObject implements IEntityTypeCollection
 {
 
     /**
@@ -28,7 +28,7 @@ class ClientObjectCollection extends ClientObject
      * @param ResourcePath $resourcePath
      * @param ODataQueryOptions $queryOptions
      */
-    public function __construct(ClientRuntimeContext $ctx, ResourcePath $resourcePath = null, ODataQueryOptions $queryOptions = null)
+    public function __construct(ClientRuntimeContext $ctx, ResourcePath $resourcePath, ODataQueryOptions $queryOptions = null)
     {
         parent::__construct($ctx, $resourcePath);
         $this->queryOptions = $queryOptions;
@@ -64,12 +64,14 @@ class ClientObjectCollection extends ClientObject
      * Adds client object into collection
      * @param ClientObject $clientObject
      */
-    public function addChild(ClientObject $clientObject)
+    public function addChild($clientObject)
     {
         $this->data[] = $clientObject;
         if (is_null($clientObject->parentCollection))
             $clientObject->parentCollection = $this;
     }
+
+
 
     /**
      * @param ClientObject $clientObject
@@ -91,21 +93,18 @@ class ClientObjectCollection extends ClientObject
 
 
     /**
-     * Gets the item by entity identifier
-     * @param int $id
-     * @return ClientObject
+     * Finds the first item
+     * @param string $key
+     * @param string $value
+     * @return ClientObject|null
      */
-    public function getItemById($id)
+    public function findFirst($key,$value)
     {
-        $result = array_filter(
-            $this->data,
-            function (ClientObject $item) use ($id) {
-                return $item->getProperty("Id") === $id;
-            }
-        );
-        if (count($result) > 0)
-            return array_values($result)[0];
-        return null;
+        $result = $this->findItems(
+            function (ClientObject $item) use ($key, $value) {
+                return $item->getProperty($key) === $value;
+            });
+        return (is_array($result) && (count($result) > 0) ? array_values($result)[0] : null);
     }
 
 
@@ -152,11 +151,6 @@ class ClientObjectCollection extends ClientObject
         $this->data = array();
     }
 
-
-    public function AreItemsAvailable()
-    {
-        return ($this->getCount() > 0);
-    }
 
     /**
      * @return ODataQueryOptions
@@ -206,7 +200,7 @@ class ClientObjectCollection extends ClientObject
      */
     public function orderBy($value)
     {
-        $this->queryOptions->OrderBy = $value;
+        $this->queryOptions->OrderBy = rawurlencode($value);
         return $this;
     }
 
@@ -234,13 +228,27 @@ class ClientObjectCollection extends ClientObject
 
 
     /**
+     * Sets the number of records to skip before it retrieves records in a collection.
+     * @param $value
+     * @return ClientObjectCollection $this
+     */
+    public function skiptoken($value)
+    {
+        $this->queryOptions->SkipToken = rawurlencode($value);
+        return $this;
+    }
+
+
+    /**
      * Creates resource for a collection
      * @return ClientObject
      */
-    public function createTypedObject()
+    public function createType()
     {
         $clientObjectType = $this->getItemTypeName();
-        return new $clientObjectType($this->getContext());
+        $clientObject = new $clientObjectType($this->getContext());
+        $clientObject->parentCollection = $this;
+        return $clientObject;
     }
 
 
@@ -255,21 +263,12 @@ class ClientObjectCollection extends ClientObject
         return str_replace("Collection", "", get_class($this));
     }
 
-    /**
-     * Converts JSON into payload
-     * @param mixed $json
-     */
-    public function convertFromJson($json)
-    {
-        $this->clearData();
-        foreach ($json as $item) {
-            $clientObject = $this->createTypedObject();
-            $clientObject->parentCollection = $this;
-            $clientObject->convertFromJson($item);
-            $this->addChild($clientObject);
-        }
-        if(!is_null($this->resourcePath))
-            $this->resourcePath->ServerObjectIsNull = false;
-    }
+
+   function getProperties($flag=SCHEMA_ALL_PROPERTIES)
+   {
+       return array_map(function (ClientObject $item) use ($flag) {
+           return $item->getProperties($flag);
+       }, $this->getData());
+   }
 
 }

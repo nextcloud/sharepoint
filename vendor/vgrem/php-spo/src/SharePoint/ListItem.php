@@ -1,8 +1,8 @@
 <?php
 
 namespace Office365\PHP\Client\SharePoint;
-use Office365\PHP\Client\Runtime\ClientActionDeleteEntity;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ResourcePathEntity;
 use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
 
@@ -19,25 +19,26 @@ class ListItem extends SecurableObject
      */
     public function update()
     {
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry,$this);
     }
 
     public function deleteObject()
     {
-        $qry = new ClientActionDeleteEntity($this);
+        $qry = new DeleteEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
 
-    public function getEntityTypeName(){
+    public function getTypeName(){
         $list = $this->getParentList();
         if(!isset($this->resourceType)) {
             //determine whether ListItemEntityTypeFullName property has been requested
             if(!$list->isPropertyAvailable("ListItemEntityTypeFullName")){
                 $request = new RequestOptions($list->getResourceUrl() . "?\$select=ListItemEntityTypeFullName");
                 $response = $this->getContext()->executeQueryDirect($request);
-                $this->getContext()->populateObject($response,$list);
+                $payload = json_decode($response);
+                $this->getContext()->getSerializerContext()->map($payload,$list);
             }
             $this->resourceType = $list->getProperty("ListItemEntityTypeFullName");
         }

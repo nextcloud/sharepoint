@@ -1,7 +1,7 @@
 <?php
 
 namespace Office365\PHP\Client\Runtime;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\OData\ODataQueryOptions;
 
 
 /**
@@ -9,40 +9,26 @@ use Office365\PHP\Client\Runtime\OData\ODataPayload;
  */
 class ClientAction
 {
-    /**
-     * @var int
-     */
-    public $ActionType;
 
     /**
-     * @var string
+     * @var ResourcePath
      */
-    public $ResourceUrl;
-
-    /**
-     * @var ODataPayload
-     */
-    public $Payload;
+    protected $resourcePath;
 
 
     /**
-     * @var int
+     * @var $queryOptions ODataQueryOptions
      */
-    public $PayloadFormatType;
+    protected $queryOptions;
 
 
     /**
      * ClientAction constructor.
-     * @param string $resourceUrl
-     * @param ODataPayload $payload
-     * @param int $actionType
+     * @param ResourcePath $resourcePath
      */
-    public function __construct($resourceUrl, $payload=null, $actionType=null)
+    public function __construct(ResourcePath $resourcePath)
     {
-        $this->ResourceUrl = $resourceUrl;
-        $this->Payload = $payload;
-        $this->ActionType = $actionType;
-        $this->PayloadFormatType = FormatType::Json;
+        $this->resourcePath = $resourcePath;
     }
 
     /**
@@ -50,6 +36,22 @@ class ClientAction
      */
     public function getId(){
         return spl_object_hash($this);
+    }
+
+
+    /**
+     * @return ResourcePath
+     */
+    public function getResourcePath(){
+        return $this->resourcePath;
+    }
+
+
+    /**
+     * @return ODataQueryOptions
+     */
+    public function getQueryOptions(){
+        return $this->queryOptions;
     }
 
 }

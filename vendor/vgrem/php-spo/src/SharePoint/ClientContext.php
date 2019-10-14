@@ -4,11 +4,13 @@ namespace Office365\PHP\Client\SharePoint;
 
 use Office365\PHP\Client\Runtime\Auth\IAuthenticationContext;
 use Office365\PHP\Client\Runtime\ClientAction;
-use Office365\PHP\Client\Runtime\ClientActionType;
+use Office365\PHP\Client\Runtime\ClientResult;
+use Office365\PHP\Client\Runtime\DeleteEntityQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 use Office365\PHP\Client\Runtime\ClientRuntimeContext;
 use Office365\PHP\Client\Runtime\ContextWebInformation;
 use Office365\PHP\Client\Runtime\HttpMethod;
-use Office365\PHP\Client\Runtime\OData\JsonLightFormat;
+use Office365\PHP\Client\Runtime\OData\JsonLightSerializerContext;
 use Office365\PHP\Client\Runtime\OData\ODataMetadataLevel;
 use Office365\PHP\Client\Runtime\ResourcePathEntity;
 use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
@@ -41,7 +43,7 @@ class ClientContext extends ClientRuntimeContext
     public function __construct($serviceUrl, IAuthenticationContext $authCtx)
     {
         $serviceRootUrl = $serviceUrl . '/_api/';
-        parent::__construct($serviceRootUrl,$authCtx,new JsonLightFormat(ODataMetadataLevel::Verbose));
+        parent::__construct($serviceRootUrl,$authCtx,new JsonLightSerializerContext(ODataMetadataLevel::Verbose));
     }
 
     /**
@@ -59,17 +61,19 @@ class ClientContext extends ClientRuntimeContext
     /**
      * Request the SharePoint Context Info
      */
-    protected function requestFormDigest()
+    public function requestFormDigest()
     {
         $request = new RequestOptions($this->getServiceRootUrl() . "contextinfo");
         $request->Method = HttpMethod::Post;
         $response = $this->executeQueryDirect($request);
         if(!isset($this->contextWebInformation))
             $this->contextWebInformation = new ContextWebInformation();
-        if($this->Format->MetadataLevel == ODataMetadataLevel::Verbose){
-            $this->contextWebInformation->EntityName = "GetContextWebInformation";
+        $result = new ClientResult($this->contextWebInformation);
+        if ($this->getSerializerContext()->MetadataLevel == ODataMetadataLevel::Verbose) {
+            $this->getSerializerContext()->RootElement = "GetContextWebInformation";
         }
-        $this->populateObject($response,$this->contextWebInformation);
+        $payload = json_decode($response);
+        $result->fromJson($payload,$this->getSerializerContext());
     }
 
     /**
@@ -93,10 +97,10 @@ class ClientContext extends ClientRuntimeContext
             $this->ensureFormDigest($request);
         }
         //set data modification headers
-        if ($query->ActionType === ClientActionType::UpdateEntity) {
+        if ($query instanceof UpdateEntityQuery) {
             $request->addCustomHeader("IF-MATCH", "*");
             $request->addCustomHeader("X-HTTP-Method", "MERGE");
-        } else if ($query->ActionType === ClientActionType::DeleteEntity) {
+        } else if ($query instanceof DeleteEntityQuery) {
             $request->addCustomHeader("IF-MATCH", "*");
             $request->addCustomHeader("X-HTTP-Method", "DELETE");
         }

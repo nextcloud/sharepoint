@@ -3,10 +3,12 @@
 namespace Office365\PHP\Client\Runtime;
 
 use Office365\PHP\Client\Runtime\Auth\IAuthenticationContext;
-use Office365\PHP\Client\Runtime\OData\ODataFormat;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\OData\ODataRequest;
+use Office365\PHP\Client\Runtime\OData\ODataSerializerContext;
 use Office365\PHP\Client\Runtime\OData\ODataQueryOptions;
 use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
+use Office365\PHP\Client\Runtime\Utilities\Version;
+
 
 /**
  * OData Runtime context for Office365 APIs
@@ -36,23 +38,29 @@ class ClientRuntimeContext
     private $pendingRequest;
 
     /**
-     * @var ODataFormat
+     * @var ODataSerializerContext
      */
-    public $Format;
+    private $serializerContext;
+
+
+    /**
+     * @var Version $RequestSchemaVersion
+     */
+    public $RequestSchemaVersion;
 
     /**
      * REST client context ctor
      * @param string $serviceUrl
      * @param IAuthenticationContext $authContext
-     * @param ODataFormat $format
+     * @param ODataSerializerContext $serializationContext
      * @param string $version
      */
-    public function __construct($serviceUrl, IAuthenticationContext $authContext, ODataFormat $format, $version = Office365Version::V1)
+    public function __construct($serviceUrl, IAuthenticationContext $authContext, ODataSerializerContext $serializationContext, $version = Office365Version::V1)
     {
         $this->version = $version;
         $this->serviceRootUrl = $serviceUrl;
         $this->authContext = $authContext;
-        $this->Format = $format;
+        $this->serializerContext = $serializationContext;
     }
 
     /**
@@ -104,8 +112,12 @@ class ClientRuntimeContext
             $queryOptions->Select = implode(",",$selectProperties);
             $this->getPendingRequest()->addQueryAndResultObject($clientObject, $queryOptions);
         }
-        else
-            $this->getPendingRequest()->addQueryAndResultObject($clientObject);
+        else{
+            $queryOptions = null;
+            if($clientObject instanceof ClientObjectCollection)
+                $queryOptions = $clientObject->getQueryOptions();
+            $this->getPendingRequest()->addQueryAndResultObject($clientObject,$queryOptions);
+        }
         return $this;
     }
 
@@ -122,17 +134,19 @@ class ClientRuntimeContext
     /**
      * Submit client request to SharePoint OData/SOAP service
      *
-     * @return self
      */
     public function executeQuery()
     {
-        $this->getPendingRequest()->executeQuery();
-        return $this;
+        while ($this->hasPendingRequest()) {
+            $this->getPendingRequest()->executeQuery();
+        }
     }
+
 
     /**
      * @param RequestOptions $options
-     * @return ODataPayload
+     * @return string
+     * @throws \Exception
      */
     public function executeQueryDirect(RequestOptions $options)
     {
@@ -140,19 +154,18 @@ class ClientRuntimeContext
     }
 
     /**
-     * @param $response
-     * @param $resultObject
+     * @param string $response
      * @return self
      */
-    public function populateObject($response, $resultObject)
+    public function processResponse($response)
     {
-        $this->getPendingRequest()->populateObject($response, $resultObject);
+        $this->getPendingRequest()->processResponse($response);
         return $this;
     }
 
     /**
      * @param ClientAction $query
-     * @param ClientObject $resultObject
+     * @param ClientObject|ClientResult $resultObject
      * @return self
      */
     public function addQuery(ClientAction $query, $resultObject = null)
@@ -167,10 +180,40 @@ class ClientRuntimeContext
     public function getPendingRequest()
     {
         if (!isset($this->pendingRequest)) {
-            $this->pendingRequest = new ClientRequest($this, $this->Format);
+            $this->pendingRequest = new ODataRequest($this);
+        }
+        if($this->pendingRequest->getRequestStatus() != ClientRequestStatus::Active){
+            $this->pendingRequest = $this->pendingRequest->getNextRequest();
         }
         return $this->pendingRequest;
     }
 
+
+    /**
+     * @return bool
+     */
+    public function hasPendingRequest()
+    {
+        $request = $this->getPendingRequest();
+        return ($request->getRequestStatus() == ClientRequestStatus::Active &&
+            count($request->getActions()) > 0);
+    }
+
+
+    /**
+     * @return Version
+     */
+    public function getServerLibraryVersion(){
+        return new Version();
+    }
+
+
+    /**
+     * @return ODataSerializerContext
+     */
+    public function getSerializerContext()
+    {
+        return $this->serializerContext;
+    }
 
 }

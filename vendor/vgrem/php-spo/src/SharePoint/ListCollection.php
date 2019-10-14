@@ -1,9 +1,8 @@
 <?php
 
 namespace Office365\PHP\Client\SharePoint;
-use Office365\PHP\Client\Runtime\ClientActionCreateEntity;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\OData\ODataPayload;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
 use Office365\PHP\Client\Runtime\ResourcePathServiceOperation;
 
 
@@ -21,7 +20,7 @@ class ListCollection extends ClientObjectCollection
     {
         return new SPList(
             $this->getContext(),
-            new ResourcePathServiceOperation($this->getContext(),$this->getResourcePath(),"getByTitle",array($title))
+            new ResourcePathServiceOperation($this->getContext(),$this->getResourcePath(),"getByTitle",array(rawurlencode($title)))
         );
     }
 
@@ -41,13 +40,13 @@ class ListCollection extends ClientObjectCollection
 
     /**
      * Creates a List resource
-     * @param ListCreationInformation $parameters
+     * @param ListCreationInformation $properties
      * @return SPList
      */
-    public function add(ListCreationInformation $parameters)
+    public function add(ListCreationInformation $properties)
     {
         $list = new SPList($this->getContext());
-        $qry = new ClientActionCreateEntity($this,$parameters);
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),null,null,$properties);
         $this->getContext()->addQuery($qry,$list);
         $this->addChild($list);
         return $list;

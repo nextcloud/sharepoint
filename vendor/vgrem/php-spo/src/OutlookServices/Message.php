@@ -2,9 +2,9 @@
 
 
 namespace Office365\PHP\Client\OutlookServices;
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
-use Office365\PHP\Client\Runtime\ClientActionUpdateEntity;
-use Office365\PHP\Client\Runtime\OperationParameterCollection;
+use Office365\PHP\Client\Runtime\ClientValueObject;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
+use Office365\PHP\Client\Runtime\UpdateEntityQuery;
 
 
 /**
@@ -19,9 +19,9 @@ class Message extends Item
      */
     public function reply($comment)
     {
-        $payload = new OperationParameterCollection();
-        $payload->add("Comment",$comment);
-        $qry = new ClientActionInvokePostMethod($this,"Reply",null,$payload);
+        $parameter = new ClientValueObject();
+        $parameter->setProperty("Comment",$comment);
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),"Reply",null,$parameter);
         $this->getContext()->addQuery($qry);
     }
 
@@ -32,9 +32,9 @@ class Message extends Item
      */
     public function replyAll($comment)
     {
-        $payload = new OperationParameterCollection();
-        $payload->add("Comment",$comment);
-        $qry = new ClientActionInvokePostMethod($this,"ReplyAll",null,$payload);
+        $parameter = new ClientValueObject();
+        $parameter->setProperty("Comment",$comment);
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),"ReplyAll",null,$parameter);
         $this->getContext()->addQuery($qry);
     }
 
@@ -46,10 +46,10 @@ class Message extends Item
      */
     public function forward($comment,$toRecipients)
     {
-        $payload = new OperationParameterCollection();
-        $payload->add("Comment",$comment);
-        $payload->add("ToRecipients",$toRecipients);
-        $qry = new ClientActionInvokePostMethod($this,"Forward",null,$payload);
+        $parameter = new ClientValueObject();
+        $parameter->setProperty("Comment",$comment);
+        $parameter->setProperty("ToRecipients",$toRecipients);
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),"Forward",null,$parameter);
         $this->getContext()->addQuery($qry);
     }
 
@@ -60,9 +60,9 @@ class Message extends Item
      * DeletedItems well-known folder name.
      */
     public function move($destinationId){
-        $payload = new OperationParameterCollection();
-        $payload->add("DestinationId",$destinationId);
-        $qry = new ClientActionInvokePostMethod($this,"Move",null,$payload);
+        $parameter = new ClientValueObject();
+        $parameter->setProperty("DestinationId",$destinationId);
+        $qry = new InvokePostMethodQuery($this->getResourcePath(),"Move",null,$parameter);
         $this->getContext()->addQuery($qry);
     }
 
@@ -73,7 +73,7 @@ class Message extends Item
     public function read($isRead)
     {
         $this->setProperty("IsRead", $isRead);
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 
@@ -84,7 +84,7 @@ class Message extends Item
     public function important($importance)
     {
         $this->setProperty("Importance", $importance);
-        $qry = new ClientActionUpdateEntity($this);
+        $qry = new UpdateEntityQuery($this);
         $this->getContext()->addQuery($qry);
     }
 

@@ -3,7 +3,7 @@
 
 namespace Office365\PHP\Client\SharePoint\WebParts;
 
-use Office365\PHP\Client\Runtime\ClientActionInvokePostMethod;
+use Office365\PHP\Client\Runtime\InvokePostMethodQuery;
 use Office365\PHP\Client\Runtime\ClientObject;
 
 
@@ -11,8 +11,8 @@ class WebPartDefinition extends ClientObject
 {
 
     public function saveWebPartChanges(){
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "SaveWebPartChanges"
         );
         $this->getContext()->addQuery($qry);
@@ -20,8 +20,8 @@ class WebPartDefinition extends ClientObject
 
     public function closeWebPart()
     {
-        $qry = new ClientActionInvokePostMethod(
-            $this,
+        $qry = new InvokePostMethodQuery(
+            $this->getResourcePath(),
             "CloseWebPart"
         );
         $this->getContext()->addQuery($qry);
