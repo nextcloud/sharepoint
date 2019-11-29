@@ -162,23 +162,9 @@ class Client {
 	public function fetchFolder($relativeServerPath, array $properties = null) {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
-		if(true || $this->isSP2013) {
-			$allFields = $folder->getListItemAllFields();
-			$this->context->load($allFields);
-		}
+		$allFields = $folder->getListItemAllFields();
+		$this->context->load($allFields);
 		$this->loadAndExecute($folder, $properties);
-
-		if($this->isSP2013 === null
-			&& ($properties === null || in_array(Storage::SP_PROPERTY_MTIME, $properties))
-		) {
-			$this->isSP2013 = (string)$folder->getProperty(Storage::SP_PROPERTY_MTIME) === '';
-			if($this->isSP2013) {
-				\OC::$server->getLogger()->debug('SP 2013 detected against {path}',
-					['app' => 'sharepoint', 'path' => $relativeServerPath]);
-			}
-			$allFields = $folder->getListItemAllFields();
-			$this->loadAndExecute($allFields);
-		}
 
 		return $folder;
 	}
@@ -390,26 +376,10 @@ class Client {
 			// it's expensive, we only check folders
 			return false;
 		}
-		if(true || $this->isSP2013) {
-			return in_array(
-				(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
-				$this->knownSP2013SystemFolders
-			);
-		}
-
-		// following code path when $isSP2013 was not set. If everything works
-		// as expected it is at least not likely to end up here. Otherwise,
-		// we can add a check.
-
-		$fields = $file->getListItemAllFields();
-		if ($fields->getProperties() === []) {
-			$this->loadAndExecute($fields, ['Id']);
-		}
-		$id = $fields->getProperty('Id');
-		// avoids listing hidden "Forms" folder (and its contents).
-		// Have not found a different mechanism to detect whether
-		// a (file or= folder is a system folder.
-		return $id === null;
+		return in_array(
+			(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
+			$this->knownSP2013SystemFolders
+		);
 	}
 
 	/**
