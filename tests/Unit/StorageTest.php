@@ -71,7 +71,7 @@ class SharePointTest extends TestCase {
 	/** @var  CappedMemoryCache|\PHPUnit_Framework_MockObject_MockObject */
 	protected $fileCache;
 
-	public function setUp() {
+	protected function setUp(): void {
 		parent::setUp();
 
 		$this->factory = $this->createMock(ContextsFactory::class);

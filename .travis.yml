@@ -2,9 +2,9 @@ sudo: required
 dist: trusty
 language: php
 php:
-    - 7.1
     - 7.2
     - 7.3
+    - 7.4snapshot
 env:
     global:
         - CORE_BRANCH=master
@@ -16,13 +16,13 @@ matrix:
     allow_failures:
         - env: DB=sqlite;CODECHECK=2
     include:
-        - php: 7.1
+        - php: 7.3
           env: DB=mysql
-        - php: 7.1
+        - php: 7.3
           env: DB=pgsql
-        - php: 7.1
+        - php: 7.3
           env: DB=sqlite;CODECHECK=1
-        - php: 7.1
+        - php: 7.3
           env: DB=sqlite;CODECHECK=2
     fast_finish: true
 

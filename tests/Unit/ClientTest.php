@@ -45,7 +45,7 @@ class SharePointClientTest extends TestCase {
 	/** @var  Client */
 	protected $client;
 
-	public function setUp() {
+	protected function setUp(): void {
 		parent::setUp();
 
 		$this->contextsFactory = $this->createMock(ContextsFactory::class);
