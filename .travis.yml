@@ -7,7 +7,7 @@ php:
     - 7.4snapshot
 env:
     global:
-        - CORE_BRANCH=master
+        - CORE_BRANCH=stable18
         - APP_NAME=sharepoint
     matrix:
         - DB=sqlite
