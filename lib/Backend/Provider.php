@@ -46,5 +46,5 @@ class Provider implements IBackendProvider {
 			new Password($this->lFactory->get('files_external'))
 		);
 		return [ $backend ];
-	}
+	};
 }
