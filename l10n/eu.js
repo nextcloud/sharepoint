@@ -3,6 +3,8 @@ OC.L10N.register(
     {
     "SharePoint" : "SharePoint",
     "Host" : "Ostalaria",
-    "Document Library" : "Dokumentuen liburutegia"
+    "Document Library" : "Dokumentuen liburutegia",
+    "SharePoint Backend" : "Sharepoint zerbitzaria",
+    "SharePoint Backend for External storages" : "Kanpo biltegiratzerako SharePoint zerbitzaria"
 },
 "nplurals=2; plural=(n != 1);");
