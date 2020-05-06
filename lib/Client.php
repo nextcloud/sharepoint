@@ -468,14 +468,19 @@ class Client {
 		if(!is_string($this->credentials['password']) || empty($this->credentials['password'])) {
 			throw new \InvalidArgumentException('No password given');
 		}
-		/*$this->authContext = $this->contextsFactory->getAuthContext($this->credentials['user'], $this->credentials['password']);
-		$this->authContext->AuthType = CURLAUTH_NTLM;		# Basic auth does not work somehow…*/
 
-		$this->authContext = new AuthenticationContext($this->sharePointUrl);
-		$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
+		try {
+			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
+			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
+		} catch (\Exception $e) {
+			// fall back to NTLM
+			$this->authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
+			$this->authContext->AuthType = CURLAUTH_NTLM;
+			// Auth is not triggered yet with NTLM. This will happen when
+			// something is requested from SharePoint (on demand)
+		}
 
 		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
-		# Auth is not triggered yet. This will happen when something is requested from SharePoint (on demand)
 	}
 
 }
