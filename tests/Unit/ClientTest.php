@@ -65,7 +65,7 @@ class SharePointClientTest extends TestCase {
 		$properties = ['Length', 'TimeLastModified'];
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$fileMock = $this->createMock(File::class);
@@ -99,7 +99,7 @@ class SharePointClientTest extends TestCase {
 		$properties = ['Length', 'TimeLastModified'];
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$listItemAllFieldsMock = $this->createMock(ListItem::class);
@@ -144,11 +144,16 @@ class SharePointClientTest extends TestCase {
 		$properties = ['Length', 'TimeLastModified'];
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$fileMock = $this->createMock(File::class);
+
+		$listItemMock = $this->createMock(ListItem::class);
 		$folderMock = $this->createMock(Folder::class);
+		$folderMock->expects($this->once())
+			->method('getListItemAllFields')
+			->willReturn($listItemMock);
 
 		$webMock = $this->createMock(Web::class);
 		$webMock->expects($this->once())
@@ -164,15 +169,20 @@ class SharePointClientTest extends TestCase {
 		$clientContextMock->expects($this->exactly(2))
 			->method('getWeb')
 			->willReturn($webMock);
-		$clientContextMock->expects($this->exactly(2))
+		$clientContextMock->expects($this->exactly(3))
 			->method('load')
-			->withConsecutive([$fileMock, $properties], [$folderMock, $properties]);
-		$clientContextMock->expects($this->at(2))
+			->withConsecutive([$fileMock, $properties], [$listItemMock, $this->anything()], [$folderMock, $properties]);
+		$clientContextMock->expects($this->exactly(2))
 			->method('executeQuery')
-			->willThrowException(new \Exception('The file /whatwasitsname does not exist.'));
-		$clientContextMock->expects($this->at(5))
-			->method('executeQuery')
-			->willThrowException(new \Exception('Unknown Error'));
+			->willReturnCallback(function () {
+				static $cnt = 0;
+				$cnt++;
+				if($cnt === 1) {
+					throw new \Exception('The file /whatwasitsname does not exist.');
+				} else if ($cnt === 2) {
+					throw new \Exception('Unknown Error');
+				}
+			});
 
 		$this->contextsFactory->expects($this->exactly(1))
 			->method('getClientContext')
@@ -187,7 +197,7 @@ class SharePointClientTest extends TestCase {
 		$path = $parentPath . '/'. $dirName;
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
@@ -229,7 +239,7 @@ class SharePointClientTest extends TestCase {
 		$path = $parentPath . '/'. $dirName;
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
@@ -281,7 +291,7 @@ class SharePointClientTest extends TestCase {
 			->method('recycle');
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$clientContextMock = $this->createMock(ClientContext::class);
@@ -328,7 +338,7 @@ class SharePointClientTest extends TestCase {
 			->willReturn($listItemAllFieldsMock);
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$webMock = $this->createMock(Web::class);
@@ -366,7 +376,7 @@ class SharePointClientTest extends TestCase {
 			->willReturn($fileCollectionMock);
 
 		$this->contextsFactory->expects($this->once())
-			->method('getAuthContext')
+			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
 
 		$clientContextMock = $this->createMock(ClientContext::class);

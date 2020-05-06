@@ -45,9 +45,6 @@ class Client {
 	/** @var  AuthenticationContext */
 	protected $authContext;
 
-	/** @var  SPList */
-	protected $documentLibrary;
-
 	/** @var ContextsFactory */
 	private $contextsFactory;
 
@@ -56,9 +53,6 @@ class Client {
 
 	/** @var string[] */
 	private $credentials;
-
-	/** @var bool */
-	private $isSP2013;
 
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
