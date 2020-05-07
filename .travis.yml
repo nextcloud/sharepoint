@@ -29,6 +29,9 @@ matrix:
 before_install:
     - wget https://raw.githubusercontent.com/nextcloud/travis_ci/master/before_install.sh
     - . ./before_install.sh $APP_NAME $CORE_BRANCH $DB
+    - cd ../server/apps/$APP_NAME
+    - composer install
+    - cd ../../
 
     # Add some output debugging information
     - cd ../server
@@ -40,7 +43,7 @@ before_install:
     - ./occ app:list
 
 script:
-    -  cd apps/$APP_NAME/
+    - cd apps/$APP_NAME/
 
     # Test the app
     - sh -c "if [ '$CODECHECK' = '1' ]; then find . -name \*.php -exec php -l \"{}\" \;; fi"
