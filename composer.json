@@ -1,6 +1,6 @@
 {
 	"require": {
-		"vgrem/php-spo": "^2.2",
+		"vgrem/php-spo": "^2.4",
 		"cweagans/composer-patches": "^1.7"
 	},
 	"scripts": {

@@ -24,20 +24,20 @@
 namespace OCA\SharePoint;
 
 use Exception;
+use Office365\Runtime\ClientObject;
+use Office365\Runtime\ClientObjectCollection;
+use Office365\Runtime\Http\RequestOptions;
+use Office365\Runtime\Http\Requests;
+use Office365\SharePoint\BasePermissions;
+use Office365\SharePoint\ClientContext;
+use Office365\SharePoint\File;
+use Office365\SharePoint\FileCreationInformation;
+use Office365\SharePoint\Folder;
+use Office365\SharePoint\SPList;
 use function explode;
 use function json_decode;
 use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\Storage\Storage;
-use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
-use Office365\PHP\Client\Runtime\ClientObject;
-use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
-use Office365\PHP\Client\SharePoint\BasePermissions;
-use Office365\PHP\Client\SharePoint\ClientContext;
-use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\FileCreationInformation;
-use Office365\PHP\Client\SharePoint\Folder;
-use Office365\PHP\Client\SharePoint\SPList;
 
 class Client {
 	public const DEFAULT_PROPERTIES = [
@@ -49,11 +49,8 @@ class Client {
 	/** @var  ClientContext */
 	protected $context;
 
-	/** @var  AuthenticationContext */
-	protected $authContext;
 	/** @var array */
 	protected $options;
-
 	/** @var ContextsFactory */
 	private $contextsFactory;
 
@@ -483,8 +480,7 @@ class Client {
 			if ($this->options['forceNtlm'] ?? false) {
 				throw new Exception('enforced NTLM auth');
 			}
-			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
-			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
+			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->credentials['user'], $this->credentials['password']);
 		} catch (Exception $e) {
 			\OC::$server->getLogger()->logException($e,
 				[
@@ -494,12 +490,11 @@ class Client {
 				]
 			);
 			// fall back to NTLM
-			$this->authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
-			$this->authContext->AuthType = CURLAUTH_NTLM;
+			$authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
+			$authContext->AuthType = CURLAUTH_NTLM;
+			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $authContext);
 			// Auth is not triggered yet with NTLM. This will happen when
 			// something is requested from SharePoint (on demand)
 		}
-
-		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
 	}
 }
