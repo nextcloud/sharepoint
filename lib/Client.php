@@ -185,7 +185,7 @@ class Client {
 	 *
 	 * @param $relativeServerPath
 	 * @param resource $fp a file resource open for writing
-	 * @return \Office365\PHP\Client\Runtime\OData\ODataPayload
+	 * @return bool
 	 * @throws \Exception
 	 */
 	public function getFileViaStream($relativeServerPath, $fp) {
@@ -413,7 +413,7 @@ class Client {
 		return $lists->getData();
 	}
 
-	public function getDocumentLibrary(string $documentLibrary):SPList {
+	public function getDocumentLibrary(string $documentLibrary): SPList {
 		static $list = null;
 		if($list instanceof SPList) {
 			return $list;
@@ -429,10 +429,7 @@ class Client {
 			$this->loadAndExecute($rFolder);
 			return $list;
 		}
-		if($lists->getCount() === 0) {
-			throw new NotFoundException('No list found');
-		}
-		throw new NotFoundException('Too many lists found');
+		throw new NotFoundException('List not found');
 	}
 
 	/**

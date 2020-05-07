@@ -41,6 +41,8 @@ use Office365\PHP\Client\SharePoint\Folder;
 class Storage extends Common {
 	const SP_PROPERTY_SIZE = 'Length';
 	const SP_PROPERTY_MTIME = 'TimeLastModified';
+	const SP_PROPERTY_MODIFIED = 'Modified';
+	const SP_PROPERTY_MTIME_LAST_ITEM = 'LastItemModifiedDate';
 	const SP_PROPERTY_URL = 'ServerRelativeUrl';
 	const SP_PROPERTY_NAME = 'Name';
 
@@ -209,7 +211,7 @@ class Storage extends Common {
 		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
 		if($mtimeValue === '') {
 			// if sp2013 ListItemAllFields are fetched automatically
-			$mtimeValue = $file->getListItemAllFields()->getProperty('Modified');
+			$mtimeValue = $file->getListItemAllFields()->getProperty(self::SP_PROPERTY_MODIFIED);
 		}
 		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
 
@@ -242,7 +244,7 @@ class Storage extends Common {
 	protected function statForDocumentLibrary() {
 		try {
 			$dLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
-			$mtimeValue = (string)$dLib->getProperty('LastItemModifiedDate');
+			$mtimeValue = (string)$dLib->getProperty(self::SP_PROPERTY_MTIME_LAST_ITEM);
 		} catch (NotFoundException $e) {
 			\OC::$server->getLogger()->logException($e);
 			return false;
@@ -254,7 +256,6 @@ class Storage extends Common {
 		} else {
 			$mtime = new \DateTime($mtimeValue);
 			$timestamp = $mtime->getTimestamp();
-			error_log('Document Library mtime found ');
 		}
 
 		return [
@@ -677,7 +678,7 @@ class Storage extends Common {
 	private function formatPath($path) {
 		$path = trim($path, '/');
 		$docLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
-		$serverUrl = $docLib->getRootFolder()->getProperty('ServerRelativeUrl');
+		$serverUrl = $docLib->getRootFolder()->getProperty(self::SP_PROPERTY_URL);
 		if($path !== '') {
 			$serverUrl .= '/' . $path;
 		}
