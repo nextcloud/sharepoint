@@ -24,32 +24,14 @@
 
 namespace OCA\SharePoint;
 
-use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
-use Office365\PHP\Client\Runtime\Auth\IAuthenticationContext;
-use Office365\PHP\Client\Runtime\Auth\NetworkCredentialContext;
-use Office365\PHP\Client\SharePoint\ClientContext;
+use Office365\SharePoint\ClientContext;
 
 class ContextsFactory {
 
 	/**
-	 * @param string $user
-	 * @param string $password
-	 * @return NetworkCredentialContext
+	 * @throws \Exception
 	 */
-	public function getCredentialsAuthContext(string $user, string $password): NetworkCredentialContext {
-		return new NetworkCredentialContext($user, $password);
-	}
-
-	public function getTokenAuthContext(string $url): AuthenticationContext {
-		return new AuthenticationContext($url);
-	}
-
-	/**
-	 * @param string $server
-	 * @param IAuthenticationContext $authContext
-	 * @return ClientContext
-	 */
-	public function getClientContext($server, IAuthenticationContext $authContext) {
-		return new ClientContext($server, $authContext);
+	public function getClientContext(string $url, string $user, string $password): ClientContext {
+		return ClientContext::connectWithUserCredentials($url, $user, $password);
 	}
 }

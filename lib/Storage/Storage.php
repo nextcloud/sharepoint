@@ -35,10 +35,10 @@ use OCA\SharePoint\NotFoundException;
 use OCP\Files\FileInfo;
 use OCP\ILogger;
 use OCP\ITempManager;
-use Office365\PHP\Client\Runtime\ClientObject;
-use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\Folder;
+use Office365\Runtime\ClientObject;
+use Office365\Runtime\ClientObjectCollection;
+use Office365\SharePoint\File;
+use Office365\SharePoint\Folder;
 
 class Storage extends Common {
 	public const SP_PROPERTY_SIZE = 'Length';
