@@ -1,4 +1,2 @@
 composer.phar
-/vendor/vgrem/php-spo/examples/
-/vendor/vgrem/php-spo/tests/
-/vendor/cweagans/composer-patches/tests/
+/vendor/
