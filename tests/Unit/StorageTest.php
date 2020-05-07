@@ -31,10 +31,10 @@ use OCP\Files\FileInfo;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
-use Office365\PHP\Client\SharePoint\ClientContext;
-use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\Folder;
-use Office365\PHP\Client\SharePoint\SPList;
+use Office365\SharePoint\ClientContext;
+use Office365\SharePoint\File;
+use Office365\SharePoint\Folder;
+use Office365\SharePoint\SPList;
 use Test\TestCase;
 
 class StorageTest extends TestCase {

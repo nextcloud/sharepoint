@@ -23,27 +23,23 @@
 
 namespace OCA\SharePoint;
 
+use Office365\Runtime\ClientObject;
+use Office365\Runtime\ClientObjectCollection;
+use Office365\Runtime\Http\RequestOptions;
+use Office365\Runtime\Http\Requests;
+use Office365\SharePoint\BasePermissions;
+use Office365\SharePoint\ClientContext;
+use Office365\SharePoint\File;
+use Office365\SharePoint\FileCreationInformation;
+use Office365\SharePoint\Folder;
+use Office365\SharePoint\SPList;
 use function explode;
 use function json_decode;
 use OCA\SharePoint\Storage\Storage;
-use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
-use Office365\PHP\Client\Runtime\ClientObject;
-use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
-use Office365\PHP\Client\Runtime\Utilities\Requests;
-use Office365\PHP\Client\SharePoint\BasePermissions;
-use Office365\PHP\Client\SharePoint\ClientContext;
-use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\FileCreationInformation;
-use Office365\PHP\Client\SharePoint\Folder;
-use Office365\PHP\Client\SharePoint\SPList;
 
 class Client {
 	/** @var  ClientContext */
 	protected $context;
-
-	/** @var  AuthenticationContext */
-	protected $authContext;
 
 	/** @var ContextsFactory */
 	private $contextsFactory;
@@ -465,17 +461,6 @@ class Client {
 			throw new \InvalidArgumentException('No password given');
 		}
 
-		try {
-			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
-			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
-		} catch (\Exception $e) {
-			// fall back to NTLM
-			$this->authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
-			$this->authContext->AuthType = CURLAUTH_NTLM;
-			// Auth is not triggered yet with NTLM. This will happen when
-			// something is requested from SharePoint (on demand)
-		}
-
-		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
+		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->credentials['user'], $this->credentials['password']);
 	}
 }

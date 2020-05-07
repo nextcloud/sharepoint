@@ -5,6 +5,6 @@ The SharePoint Backend allows administrators to add SharePoint document librarie
 
 ![screenshot](screenshots/configuration.png)
 
-Supports SharePoint 2013, 2016 and SharePoint Online (Office 365). Nextcloud accesses SharePoint through the SharePoint REST API and uses SAML Token authentication, with a fallback to NTLM auth. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
+Supports SharePoint 2013, 2016, 2019 (experimental) and SharePoint Online (Office 365). Nextcloud accesses SharePoint through the SharePoint REST API and uses SAML Token authentication, with a fallback to NTLM auth. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
 
 Learn more about External Storage and SharePoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)
