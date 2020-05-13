@@ -134,8 +134,14 @@ class StorageTest extends TestCase {
 		$returnMTime = $mtime->format('o-m-d\TH:i:se');
 		$size = $returnSize ?: FileInfo::SPACE_UNKNOWN;
 
-		$folderMock = $this->createMock(Folder::class);
-		$folderMock->expects($this->exactly(3))
+		$rootFolderMock = $this->createMock(Folder::class);
+		$rootFolderMock->expects($this->once())
+			->method('getProperty')
+			->with(Storage::SP_PROPERTY_URL)
+			->willReturn($this->documentLibraryTitle);
+
+		$targetFolderMock = $this->createMock(Folder::class);
+		$targetFolderMock->expects($this->exactly(3))
 			->method('getProperty')
 			->withConsecutive(
 				[Storage::SP_PROPERTY_SIZE],
@@ -144,18 +150,29 @@ class StorageTest extends TestCase {
 			)
 			->willReturnOnConsecutiveCalls($returnSize, $returnMTime, 'Documents');
 
-		$serverPath = '/' . $this->documentLibraryTitle;
+		$spListMock = $this->createMock(SPList::class);
+		$spListMock->expects($this->once())
+			->method('getRootFolder')
+			->with()
+			->willReturn($rootFolderMock);
+
+		$serverPath = $this->documentLibraryTitle;
 		if(trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
 		$this->client->expects($this->once())
 			->method('getDocumentLibrary')
+			->with($this->documentLibraryTitle)
+			->willReturn($spListMock);
+		$this->client->expects($this->once())
+			->method('fetchFileOrFolder')
 			->with($serverPath)
-			->willReturn($folderMock);
+			->willReturn($targetFolderMock);
 
 		$data = $this->storage->stat($path);
 
+		$this->assertTrue(is_array($data));
 		$this->assertSame($mtime->getTimestamp(), $data['mtime']);
 		$this->assertSame($size, $data['size']);
 		$this->assertTrue($mtime->getTimestamp() < $data['atime']);
