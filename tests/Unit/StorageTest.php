@@ -36,7 +36,7 @@ use Office365\PHP\Client\SharePoint\Folder;
 use Office365\PHP\Client\SharePoint\SPList;
 use Test\TestCase;
 
-class SharePointTest extends TestCase {
+class StorageTest extends TestCase {
 
 	/** @var  Storage */
 	protected $storage;
@@ -113,8 +113,6 @@ class SharePointTest extends TestCase {
 
 	public function pathProvider() {
 		return [
-			['/', null],
-			['', null],
 			['Paperwork', null],
 			['Paperwork/', null],
 			['/Paperwork/', null],
@@ -136,8 +134,14 @@ class SharePointTest extends TestCase {
 		$returnMTime = $mtime->format('o-m-d\TH:i:se');
 		$size = $returnSize ?: FileInfo::SPACE_UNKNOWN;
 
-		$folderMock = $this->createMock(Folder::class);
-		$folderMock->expects($this->exactly(3))
+		$rootFolderMock = $this->createMock(Folder::class);
+		$rootFolderMock->expects($this->once())
+			->method('getProperty')
+			->with(Storage::SP_PROPERTY_URL)
+			->willReturn($this->documentLibraryTitle);
+
+		$targetFolderMock = $this->createMock(Folder::class);
+		$targetFolderMock->expects($this->exactly(3))
 			->method('getProperty')
 			->withConsecutive(
 				[Storage::SP_PROPERTY_SIZE],
@@ -146,15 +150,69 @@ class SharePointTest extends TestCase {
 			)
 			->willReturnOnConsecutiveCalls($returnSize, $returnMTime, 'Documents');
 
-		$serverPath = '/' . $this->documentLibraryTitle;
+		$spListMock = $this->createMock(SPList::class);
+		$spListMock->expects($this->once())
+			->method('getRootFolder')
+			->with()
+			->willReturn($rootFolderMock);
+
+		$serverPath = $this->documentLibraryTitle;
 		if(trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
 		$this->client->expects($this->once())
+			->method('getDocumentLibrary')
+			->with($this->documentLibraryTitle)
+			->willReturn($spListMock);
+		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
 			->with($serverPath)
+			->willReturn($targetFolderMock);
+
+		$data = $this->storage->stat($path);
+
+		$this->assertTrue(is_array($data));
+		$this->assertSame($mtime->getTimestamp(), $data['mtime']);
+		$this->assertSame($size, $data['size']);
+		$this->assertTrue($mtime->getTimestamp() < $data['atime']);
+	}
+
+	public function testStatDocumentLibrary() {
+		$path = '';
+		$returnSize = null;
+
+		$mtime = new \DateTime(null, new \DateTimeZone('Z'));
+		$mtime->sub(new \DateInterval('P2D'));
+		// a SP time string looks like: 2017-03-22T16:17:23Z
+		$returnMTime = $mtime->format('o-m-d\TH:i:se');
+		$size = FileInfo::SPACE_UNKNOWN;
+
+		$serverPath = '/' . $this->documentLibraryTitle;
+		if(trim($path, '/') !== '') {
+			$serverPath .= '/' . trim($path, '/');
+		}
+
+		$folderMock = $this->createMock(Folder::class);
+		$folderMock->expects($this->once())
+			->method('getProperty')
+			->with('ServerRelativeUrl')
+			->willReturn($serverPath);
+
+		$dLibMock = $this->createMock(SPList::class);
+		$dLibMock->expects($this->once())
+			->method('getProperty')
+			->with('LastItemModifiedDate')
+			->willReturn($returnMTime);
+		$dLibMock->expects($this->once())
+			->method('getRootFolder')
+			->with()
 			->willReturn($folderMock);
+
+		$this->client->expects($this->any())
+			->method('getDocumentLibrary')
+			->with($this->documentLibraryTitle)
+			->willReturn($dLibMock);
 
 		$data = $this->storage->stat($path);
 
@@ -166,6 +224,8 @@ class SharePointTest extends TestCase {
 	public function testStatNotExisting() {
 		$path = '/foobar/bar.foo';
 		$serverPath = '/' . $this->documentLibraryTitle . '/' . trim($path, '/');
+
+		$this->prepareMocksForGetDocLibrary();
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
@@ -192,6 +252,8 @@ class SharePointTest extends TestCase {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
+		$this->prepareMocksForGetDocLibrary();
+
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
 			->with($serverPath)
@@ -207,6 +269,8 @@ class SharePointTest extends TestCase {
 		if(trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
+
+		$this->prepareMocksForGetDocLibrary();
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
@@ -234,6 +298,8 @@ class SharePointTest extends TestCase {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
+		$this->prepareMocksForGetDocLibrary();
+
 		$invocationMocker = $this->client->expects($this->once())
 			->method('fetchFileOrFolder')
 			->with($serverPath);
@@ -253,7 +319,7 @@ class SharePointTest extends TestCase {
 		$dirName = '/Parentfolder/NewDirectory';
 		$serverPath = '/' . $this->documentLibraryTitle . $dirName;
 
-		$folderMock = $this->createMock(Folder::class);
+		[, $folderMock] = $this->prepareMocksForGetDocLibrary();
 
 		$invocationMocker = $this->client->expects($this->once())
 			->method('createFolder')
@@ -287,7 +353,7 @@ class SharePointTest extends TestCase {
 		$dirName = '/Parentfolder/TargetDirectory';
 		$serverPath = '/' . $this->documentLibraryTitle . $dirName;
 
-		$folderMock = $this->createMock(Folder::class);
+		[, $folderMock] = $this->prepareMocksForGetDocLibrary();
 
 		$this->client->expects($this->once())
 			->method('fetchFileOrFolder')
@@ -312,13 +378,14 @@ class SharePointTest extends TestCase {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
+		$this->prepareMocksForGetDocLibrary();
+
 		$fileMock = $this->createMock(File::class);
 
-		$this->client->expects($this->exactly(2))
+		$this->client->expects($this->any())
 			->method('fetchFileOrFolder')
 			->with($serverPath)
 			->willReturn($fileMock);
-
 		$this->client->expects($this->once())
 			->method('delete')
 			->with($fileMock);
@@ -326,6 +393,25 @@ class SharePointTest extends TestCase {
 		$this->storage->unlink($path);
 	}
 
+	private function prepareMocksForGetDocLibrary() {
+		$folderMock = $this->createMock(Folder::class);
+		$folderMock->expects($this->any())
+			->method('getProperty')
+			->with('ServerRelativeUrl')
+			->willReturn('/' . $this->documentLibraryTitle);
 
+		$spListMock = $this->createMock(SPList::class);
+		$spListMock->expects($this->any())
+			->method('getRootFolder')
+			->with()
+			->willReturn($folderMock);
+
+		$this->client->expects($this->any())
+			->method('getDocumentLibrary')
+			->with($this->documentLibraryTitle)
+			->willReturn($spListMock);
+
+		return [$spListMock, $folderMock];
+	}
 
 }

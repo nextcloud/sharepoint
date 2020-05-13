@@ -41,6 +41,8 @@ use Office365\PHP\Client\SharePoint\Folder;
 class Storage extends Common {
 	const SP_PROPERTY_SIZE = 'Length';
 	const SP_PROPERTY_MTIME = 'TimeLastModified';
+	const SP_PROPERTY_MODIFIED = 'Modified';
+	const SP_PROPERTY_MTIME_LAST_ITEM = 'LastItemModifiedDate';
 	const SP_PROPERTY_URL = 'ServerRelativeUrl';
 	const SP_PROPERTY_NAME = 'Name';
 
@@ -197,6 +199,9 @@ class Storage extends Common {
 	public function stat($path) {
 		$serverUrl = $this->formatPath($path);
 		try {
+			if($path === '' || $path === '/') {
+				return $this->statForDocumentLibrary();
+			}
 			$file = $this->getFileOrFolder($serverUrl);
 		} catch (\Exception $e) {
 			return false;
@@ -204,6 +209,10 @@ class Storage extends Common {
 
 		$size = $file->getProperty(self::SP_PROPERTY_SIZE) ?: FileInfo::SPACE_UNKNOWN;
 		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
+		if($mtimeValue === '') {
+			// if sp2013 ListItemAllFields are fetched automatically
+			$mtimeValue = $file->getListItemAllFields()->getProperty(self::SP_PROPERTY_MODIFIED);
+		}
 		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
 
 		if($mtimeValue === '') {
@@ -230,6 +239,32 @@ class Storage extends Common {
 		// If we do not get a mtime from SP, we treat it as an error
 		// thus returning false, according to PHP documentation on stat()
 		return false;
+	}
+
+	protected function statForDocumentLibrary() {
+		try {
+			$dLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
+			$mtimeValue = (string)$dLib->getProperty(self::SP_PROPERTY_MTIME_LAST_ITEM);
+		} catch (NotFoundException $e) {
+			\OC::$server->getLogger()->logException($e);
+			return false;
+		}
+
+		if($mtimeValue === '') {
+			// SP2013 does not provide an mtime.
+			$timestamp = time();
+		} else {
+			$mtime = new \DateTime($mtimeValue);
+			$timestamp = $mtime->getTimestamp();
+		}
+
+		return [
+			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
+			'size'  => FileInfo::SPACE_UNKNOWN,
+			'mtime' => $timestamp,
+			// no property in SP 2013 & 2016, other storages do the same
+			'atime' => time(),
+		];
 	}
 
 	/**
@@ -559,7 +594,7 @@ class Storage extends Common {
 					/** @var  File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
 					if(is_null($url)) {
-						// at least on SP13 $url is null, although it should not
+						// at least on SP13 requesting self::SP_PROPERTY_URL against folders causes an exception
 						continue;
 					}
 					$itemEntry = $this->fileCache->get($url);
@@ -582,6 +617,9 @@ class Storage extends Common {
 	 * @throws NotFoundException
 	 */
 	private function getUserPermissions($serverUrl) {
+		// temporarily, cf. https://github.com/vgrem/phpSPO/issues/93#issuecomment-489024363
+		throw new NotFoundException('Could not retrieve permissions');
+
 		$item = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
 		if(isset($entry['permissions'])) {
@@ -639,7 +677,8 @@ class Storage extends Common {
 	 */
 	private function formatPath($path) {
 		$path = trim($path, '/');
-		$serverUrl = '/' . $this->documentLibrary;
+		$docLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
+		$serverUrl = $docLib->getRootFolder()->getProperty(self::SP_PROPERTY_URL);
 		if($path !== '') {
 			$serverUrl .= '/' . $path;
 		}
