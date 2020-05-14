@@ -1,21 +1,5 @@
 [package]
-exclude = [
-        ".drone.yml",
-        ".git",
-        ".github",
-        "Makefile",
-        ".scrutinizer.yml",
-        ".tx",
-        "krankerl.toml",
-        "screenshots",
-        "tests",
-        ".gitignore",
-	".travis.yml",
-	"composer.*",
-	"issue_template.md",
-	"phpunit.*"
-]
 
 before_cmds = [
-
+	"composer install"
 ]
