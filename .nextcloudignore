@@ -1,0 +1,15 @@
+composer.*
+.drone.yml
+.git
+.github
+.gitignore
+issue_template.md
+krankerl.toml
+Makefile
+.nextcloudignore
+phpunit.*
+screenshots
+.scrutinizer.yml
+tests
+.travis.yml
+.tx
