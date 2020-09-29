@@ -217,7 +217,7 @@ class Client {
 		$request->addCustomHeader('X-HTTP-Method','PUT'); // yes, PUT
 		$this->context->ensureFormDigest($request);
 		$request->StreamHandle = $fp;
-		$request->addCustomHeader("content-length", filesize($localPath));
+		$request->addCustomHeader("Content-Length", filesize($localPath));
 
 		return false !== $this->context->executeQueryDirect($request);
 	}
