@@ -6,10 +6,10 @@
     <summary>SharePoint Backend for External storages</summary>
     <description><![CDATA[The Sharepoint Backend allows administrators to add Sharepoint document libraries as folders in Nextcloud. This offers an easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization. Users can use the desktop client, mobile apps or web interface and comment, tag, share and collaboratively edit files on Sharepoint just like with any other data on Nextcloud.
 
-Requires Nextcloud 10 or newer. Supports Sharepoint 2013 and 2016. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
+Supports Sharepoint 2013 and 2016. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
 
 Learn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)]]></description>
-    <version>1.8.0</version>
+    <version>1.10.0</version>
     <licence>agpl</licence>
     <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
     <namespace>SharePoint</namespace>
@@ -20,7 +20,7 @@ Learn more about External Storage and Sharepoint on [https://nextcloud.com/stora
     <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>
     <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/master/screenshots/configuration.png</screenshot>
     <dependencies>
-        <nextcloud min-version="20" max-version="20" />
+        <nextcloud min-version="22" max-version="22" />
     </dependencies>
     <commands>
         <command>OCA\SharePoint\Command\ListLibraries</command>
