@@ -30,7 +30,6 @@ use OCA\SharePoint\Storage\Storage;
 use OCP\IL10N;
 
 class Backend extends \OCA\Files_External\Lib\Backend\Backend {
-
 	public function __construct(IL10N $l, Password $legacyAuth) {
 		$this
 			->setIdentifier('sharepoint')
@@ -44,5 +43,4 @@ class Backend extends \OCA\Files_External\Lib\Backend\Backend {
 			->setLegacyAuthMechanism($legacyAuth)
 		;
 	}
-
 }

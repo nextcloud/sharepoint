@@ -82,16 +82,16 @@ class StorageTest extends TestCase {
 			->method('getClient')
 			->willReturn($this->client);
 
-		$this->fileCache =  $this->createMock(CappedMemoryCache::class);
+		$this->fileCache = $this->createMock(CappedMemoryCache::class);
 
 		$parameters = [
-			'host'                    => $this->exampleHost,
-			'documentLibrary'         => $this->documentLibraryTitle,
-			'user'                    => $this->exampleUser,
-			'password'                => $this->examplePwd,
-			'contextFactory'          => $this->factory,
+			'host' => $this->exampleHost,
+			'documentLibrary' => $this->documentLibraryTitle,
+			'user' => $this->exampleUser,
+			'password' => $this->examplePwd,
+			'contextFactory' => $this->factory,
 			'sharePointClientFactory' => $this->clientFactory,
-			'cappedMemoryCache'       => $this->fileCache,
+			'cappedMemoryCache' => $this->fileCache,
 		];
 
 		$this->storage = new Storage($parameters);
@@ -102,10 +102,10 @@ class StorageTest extends TestCase {
 	 */
 	public function testBadDocumentLibraryName() {
 		$parameters = [
-			'host'            => 'example.foo',
+			'host' => 'example.foo',
 			'documentLibrary' => 'foo" or bar eq 42',
-			'user'            => 'alicce',
-			'password'        => 'asdf',
+			'user' => 'alicce',
+			'password' => 'asdf',
 		];
 
 		new Storage($parameters);
@@ -157,7 +157,7 @@ class StorageTest extends TestCase {
 			->willReturn($rootFolderMock);
 
 		$serverPath = $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -189,7 +189,7 @@ class StorageTest extends TestCase {
 		$size = FileInfo::SPACE_UNKNOWN;
 
 		$serverPath = '/' . $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -239,7 +239,7 @@ class StorageTest extends TestCase {
 	 * @dataProvider pathProvider
 	 */
 	public function testFileType($path, $returnSize) {
-		if($returnSize === null) {
+		if ($returnSize === null) {
 			$return = $this->createMock(Folder::class);
 			$expectedType = 'dir';
 		} else {
@@ -248,7 +248,7 @@ class StorageTest extends TestCase {
 		}
 
 		$serverPath = '/' . $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -266,7 +266,7 @@ class StorageTest extends TestCase {
 		$path = '/dingdong/nothing.sh';
 
 		$serverPath = '/' . $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -280,7 +280,7 @@ class StorageTest extends TestCase {
 		$this->assertFalse($this->storage->filetype($path));
 	}
 
-	public function  boolProvider() {
+	public function boolProvider() {
 		return [
 			[ true ],
 			[ false ]
@@ -294,7 +294,7 @@ class StorageTest extends TestCase {
 		$path = '/dingdong/nothing.sh';
 
 		$serverPath = '/' . $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -303,7 +303,7 @@ class StorageTest extends TestCase {
 		$invocationMocker = $this->client->expects($this->once())
 			->method('fetchFileOrFolder')
 			->with($serverPath);
-		if($exists) {
+		if ($exists) {
 			$invocationMocker->willReturn($this->createMock(File::class));
 		} else {
 			$invocationMocker->willThrowException(new NotFoundException());
@@ -326,7 +326,7 @@ class StorageTest extends TestCase {
 			->with($serverPath)
 			->willReturn($folderMock);
 
-		if(!$successful) {
+		if (!$successful) {
 			$this->fileCache->expects($this->once())
 				->method('remove')
 				->with($serverPath);
@@ -363,7 +363,7 @@ class StorageTest extends TestCase {
 			->method('delete')
 			->with($folderMock);
 
-		if(!$successful) {
+		if (!$successful) {
 			$invocationMocker->willThrowException(new \Exception('nope'));
 		}
 
@@ -374,7 +374,7 @@ class StorageTest extends TestCase {
 		$path = '/dingdong/nothing.sh';
 
 		$serverPath = '/' . $this->documentLibraryTitle;
-		if(trim($path, '/') !== '') {
+		if (trim($path, '/') !== '') {
 			$serverPath .= '/' . trim($path, '/');
 		}
 
@@ -413,5 +413,4 @@ class StorageTest extends TestCase {
 
 		return [$spListMock, $folderMock];
 	}
-
 }
