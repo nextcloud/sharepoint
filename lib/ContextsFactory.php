@@ -52,5 +52,4 @@ class ContextsFactory {
 	public function getClientContext($server, IAuthenticationContext $authContext) {
 		return new ClientContext($server, $authContext);
 	}
-
 }
