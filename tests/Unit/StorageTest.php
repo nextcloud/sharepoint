@@ -23,6 +23,7 @@
 
 namespace OCA\Files_External\Tests\Storage;
 
+use InvalidArgumentException;
 use OC\Cache\CappedMemoryCache;
 use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Storage\Storage;
@@ -97,9 +98,6 @@ class StorageTest extends TestCase {
 		$this->storage = new Storage($parameters);
 	}
 
-	/**
-	 * @expectedException \InvalidArgumentException
-	 */
 	public function testBadDocumentLibraryName() {
 		$parameters = [
 			'host' => 'example.foo',
@@ -108,6 +106,7 @@ class StorageTest extends TestCase {
 			'password' => 'asdf',
 		];
 
+		$this->expectException(InvalidArgumentException::class);
 		new Storage($parameters);
 	}
 
