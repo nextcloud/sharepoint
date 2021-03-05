@@ -177,9 +177,9 @@ class SharePointClientTest extends TestCase {
 			->willReturnCallback(function () {
 				static $cnt = 0;
 				$cnt++;
-				if($cnt === 1) {
+				if ($cnt === 1) {
 					throw new \Exception('The file /whatwasitsname does not exist.');
-				} else if ($cnt === 2) {
+				} elseif ($cnt === 2) {
 					throw new \Exception('Unknown Error');
 				}
 			});
@@ -309,7 +309,7 @@ class SharePointClientTest extends TestCase {
 	 * @dataProvider fileTypeProvider
 	 */
 	public function testRename($fileType) {
-		if($fileType === 'dir') {
+		if ($fileType === 'dir') {
 			$fileName = 'Goodies';
 			$path = '/' . $this->documentLibraryTitle . '/' . $fileName;
 			$newPath = $path . '1337';
@@ -394,6 +394,4 @@ class SharePointClientTest extends TestCase {
 		$this->assertSame($result['folders'], $folderCollectionMock);
 		$this->assertSame($result['files'], $fileCollectionMock);
 	}
-
-
 }

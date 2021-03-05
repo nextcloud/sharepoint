@@ -93,7 +93,7 @@ class ListLibraries extends Command {
 			];
 		}
 
-		if($json) {
+		if ($json) {
 			$output->writeln(\json_encode($rows));
 			return;
 		}
@@ -102,11 +102,10 @@ class ListLibraries extends Command {
 		$table->setHeaders(['Title', 'Items', 'Last modification']);
 		$table->setRows($rows);
 		$table->render();
-
 	}
 
 	protected function allPropertiesOutput(OutputInterface $output, array $libraries, bool $json = false) {
-		if(empty($libraries)) {
+		if (empty($libraries)) {
 			return;
 		}
 
@@ -121,20 +120,20 @@ class ListLibraries extends Command {
 			$rows[$i]['Title'] = $props['Title'];
 			unset($props['Title']);
 			foreach ($props as $k => $v) {
-				$rows[$i][$k] =  (is_object($v) || is_array($v)) ? '{object}' : $v;
+				$rows[$i][$k] = (is_object($v) || is_array($v)) ? '{object}' : $v;
 			}
 			$i++;
 		}
 
-		if($json) {
+		if ($json) {
 			$output->writeln(\json_encode($rows));
 			return;
 		}
 
-		foreach($rows as $libraryData) {
+		foreach ($rows as $libraryData) {
 			$table = new Table($output);
 			$table->setHeaders(['Property', 'Value']);
-			foreach($libraryData as $k => $v) {
+			foreach ($libraryData as $k => $v) {
 				$table->addRow([$k, $v]);
 			}
 			$table->render();
@@ -145,13 +144,13 @@ class ListLibraries extends Command {
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
 		$password = $input->getArgument('password');
-		if($password === null) {
+		if ($password === null) {
 			/** @var QuestionHelper $helper */
 			$helper = $this->getHelper('question');
 			$question = new Question('Password: ');
 			$question->setHidden(true);
 			$password = $helper->ask($input, $output, $question);
-			if($password === null) {
+			if ($password === null) {
 				$output->writeln('<error>Password required</error>');
 				return 1;
 			}
@@ -167,7 +166,7 @@ class ListLibraries extends Command {
 		);
 		$collection = $client->getDocumentLibraries();
 
-		if($input->getOption('all-properties')) {
+		if ($input->getOption('all-properties')) {
 			$this->allPropertiesOutput($output, $collection, $input->getOption('json'));
 		} else {
 			$this->defaultOutput($output, $collection, $input->getOption('json'));
