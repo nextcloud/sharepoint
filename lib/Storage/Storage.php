@@ -39,17 +39,17 @@ use Office365\PHP\Client\SharePoint\File;
 use Office365\PHP\Client\SharePoint\Folder;
 
 class Storage extends Common {
-	const SP_PROPERTY_SIZE = 'Length';
-	const SP_PROPERTY_MTIME = 'TimeLastModified';
-	const SP_PROPERTY_MODIFIED = 'Modified';
-	const SP_PROPERTY_MTIME_LAST_ITEM = 'LastItemModifiedDate';
-	const SP_PROPERTY_URL = 'ServerRelativeUrl';
-	const SP_PROPERTY_NAME = 'Name';
+	public const SP_PROPERTY_SIZE = 'Length';
+	public const SP_PROPERTY_MTIME = 'TimeLastModified';
+	public const SP_PROPERTY_MODIFIED = 'Modified';
+	public const SP_PROPERTY_MTIME_LAST_ITEM = 'LastItemModifiedDate';
+	public const SP_PROPERTY_URL = 'ServerRelativeUrl';
+	public const SP_PROPERTY_NAME = 'Name';
 
-	const SP_PERMISSION_READ = 1;
-	const SP_PERMISSION_CREATE = 2;
-	const SP_PERMISSION_UPDATE = 3;
-	const SP_PERMISSION_DELETE = 4;
+	public const SP_PERMISSION_READ = 1;
+	public const SP_PERMISSION_CREATE = 2;
+	public const SP_PERMISSION_UPDATE = 3;
+	public const SP_PERMISSION_DELETE = 4;
 
 	/** @var  string */
 	protected $server;
@@ -79,18 +79,18 @@ class Storage extends Common {
 		$this->server = rtrim($parameters['host'], '/') . '/';
 		$this->documentLibrary = ltrim($parameters['documentLibrary'], '/');
 
-		if(strpos($this->documentLibrary, '"') !== false) {
+		if (strpos($this->documentLibrary, '"') !== false) {
 			// they are, amongst others, not allowed and we use it in the filter
 			// cf. https://support.microsoft.com/en-us/kb/2933738
 			// TODO: verify, it talks about files and folders mostly
 			throw new \InvalidArgumentException('Illegal character in Document Library Name');
 		}
 
-		if(!isset($parameters['user']) || !isset($parameters['password'])) {
+		if (!isset($parameters['user']) || !isset($parameters['password'])) {
 			throw new \UnexpectedValueException('No user or password given');
 		}
 		$this->authUser = $parameters['user'];
-		$this->authPwd  = $parameters['password'];
+		$this->authPwd = $parameters['password'];
 
 		$this->fixDI($parameters);
 	}
@@ -176,7 +176,7 @@ class Storage extends Common {
 				/** @var File[]|Folder[] $items */
 				$items = $collection->getData();
 				foreach ($items as $item) {
-					if(!$this->spClient->isHidden($item)) {
+					if (!$this->spClient->isHidden($item)) {
 						$files[] = $item->getProperty(Storage::SP_PROPERTY_NAME);
 					}
 				}
@@ -199,7 +199,7 @@ class Storage extends Common {
 	public function stat($path) {
 		$serverUrl = $this->formatPath($path);
 		try {
-			if($path === '' || $path === '/') {
+			if ($path === '' || $path === '/') {
 				return $this->statForDocumentLibrary();
 			}
 			$file = $this->getFileOrFolder($serverUrl);
@@ -209,13 +209,13 @@ class Storage extends Common {
 
 		$size = $file->getProperty(self::SP_PROPERTY_SIZE) ?: FileInfo::SPACE_UNKNOWN;
 		$mtimeValue = (string)$file->getProperty(self::SP_PROPERTY_MTIME);
-		if($mtimeValue === '') {
+		if ($mtimeValue === '') {
 			// if sp2013 ListItemAllFields are fetched automatically
 			$mtimeValue = $file->getListItemAllFields()->getProperty(self::SP_PROPERTY_MODIFIED);
 		}
 		$name = (string)$file->getProperty(self::SP_PROPERTY_NAME);
 
-		if($mtimeValue === '') {
+		if ($mtimeValue === '') {
 			// SP2013 does not provide an mtime.
 			$timestamp = time();
 		} else {
@@ -225,13 +225,13 @@ class Storage extends Common {
 
 		$stat = [
 			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
-			'size'  => $size,
+			'size' => $size,
 			'mtime' => $timestamp,
 			// no property in SP 2013 & 2016, other storages do the same
 			'atime' => time(),
 		];
 
-		if($name !== '') {
+		if ($name !== '') {
 			// previously, checking mtime was the check, alas SP2013…
 			return $stat;
 		}
@@ -250,7 +250,7 @@ class Storage extends Common {
 			return false;
 		}
 
-		if($mtimeValue === '') {
+		if ($mtimeValue === '') {
 			// SP2013 does not provide an mtime.
 			$timestamp = time();
 		} else {
@@ -260,7 +260,7 @@ class Storage extends Common {
 
 		return [
 			// int64, size in bytes, excluding the size of any Web Parts that are used in the file.
-			'size'  => FileInfo::SPACE_UNKNOWN,
+			'size' => FileInfo::SPACE_UNKNOWN,
 			'mtime' => $timestamp,
 			// no property in SP 2013 & 2016, other storages do the same
 			'atime' => time(),
@@ -282,9 +282,9 @@ class Storage extends Common {
 		} catch (NotFoundException $e) {
 			return false;
 		}
-		if($object instanceof File) {
+		if ($object instanceof File) {
 			return 'file';
-		} else if($object instanceof Folder) {
+		} elseif ($object instanceof Folder) {
 			return 'dir';
 		} else {
 			return false;
@@ -321,7 +321,7 @@ class Storage extends Common {
 	 */
 	public function unlink($path) {
 		// file methods get called twice at least, returning true
-		if(!$this->file_exists($path)) {
+		if (!$this->file_exists($path)) {
 			return true;
 		}
 		try {
@@ -347,16 +347,16 @@ class Storage extends Common {
 			$item = $this->getFileOrFolder($newPath);
 			$this->spClient->delete($item);
 			$this->fileCache->remove($newPath);
-		} catch(NotFoundException $e) {
+		} catch (NotFoundException $e) {
 			// noop
 		}
 
 		try {
 			$isRenamed = $this->spClient->rename($oldPath, $newPath);
-			if($isRenamed) {
+			if ($isRenamed) {
 				$entry = $this->fileCache->get($oldPath);
 				$this->fileCache->remove($newPath);
-				if($entry !== false) {
+				if ($entry !== false) {
 					$this->fileCache->set($newPath, $entry);
 				}
 				$this->fileCache->remove($oldPath);
@@ -389,7 +389,7 @@ class Storage extends Common {
 				$tmpFile = $this->tempManager->getTemporaryFile();
 
 				$fp = fopen($tmpFile, 'w+');
-				if(!$this->spClient->getFileViaStream($serverUrl, $fp)) {
+				if (!$this->spClient->getFileViaStream($serverUrl, $fp)) {
 					fclose($fp);
 					return false;
 				}
@@ -419,13 +419,13 @@ class Storage extends Common {
 			case 'cb+':
 			case 'c+b':
 				//fseek 0
-				if($mode[0] === 'x' && $this->file_exists($path)) {
+				if ($mode[0] === 'x' && $this->file_exists($path)) {
 					return false;
 				}
 				$tmpFile = $this->tempManager->getTemporaryFile();
-				if($mode[0] !== 'w' && $this->file_exists($path)) {
+				if ($mode[0] !== 'w' && $this->file_exists($path)) {
 					$content = $this->fopen($path, 'r');
-					if($content === false) {
+					if ($content === false) {
 						// should not happen, but let's be safe
 						return false;
 					}
@@ -540,17 +540,15 @@ class Storage extends Common {
 	 * @param array $parameters
 	 */
 	private function fixDI(array $parameters) {
-		if(isset($parameters['contextFactory'])
-			&& $parameters['contextFactory'] instanceof ContextsFactory)
-		{
+		if (isset($parameters['contextFactory'])
+			&& $parameters['contextFactory'] instanceof ContextsFactory) {
 			$this->contextsFactory = $parameters['contextFactory'];
 		} else {
 			$this->contextsFactory = new ContextsFactory();
 		}
 
-		if(isset($parameters['sharePointClientFactory'])
-			&& $parameters['sharePointClientFactory'] instanceof ClientFactory)
-		{
+		if (isset($parameters['sharePointClientFactory'])
+			&& $parameters['sharePointClientFactory'] instanceof ClientFactory) {
 			$spcFactory = $parameters['sharePointClientFactory'];
 		} else {
 			$spcFactory = new ClientFactory();
@@ -561,14 +559,14 @@ class Storage extends Common {
 			[ 'user' => $this->authUser, 'password' => $this->authPwd]
 		);
 
-		if(isset($parameters['cappedMemoryCache'])) {
+		if (isset($parameters['cappedMemoryCache'])) {
 			$this->fileCache = $parameters['cappedMemoryCache'];
 		} else {
 			// there's no API to get such
 			$this->fileCache = new CappedMemoryCache();
 		}
 
-		if(isset($parameters['tempManager'])) {
+		if (isset($parameters['tempManager'])) {
 			$this->tempManager = $parameters['tempManager'];
 		} else {
 			$this->tempManager = \OC::$server->getTempManager();
@@ -582,7 +580,7 @@ class Storage extends Common {
 	private function getFolderContents($serverUrl) {
 		$folder = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
-		if($entry === null || !isset($entry['children'])) {
+		if ($entry === null || !isset($entry['children'])) {
 			$contents = $this->spClient->fetchFolderContents($folder);
 			$cacheItem = $entry ?: [];
 			$cacheItem['children'] = $contents;
@@ -593,13 +591,13 @@ class Storage extends Common {
 				foreach ($collection->getData() as $item) {
 					/** @var  File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
-					if(is_null($url)) {
+					if (is_null($url)) {
 						// at least on SP13 requesting self::SP_PROPERTY_URL against folders causes an exception
 						continue;
 					}
 					$itemEntry = $this->fileCache->get($url);
 					$itemEntry = $itemEntry ?: [];
-					if(!isset($itemEntry['instance'])) {
+					if (!isset($itemEntry['instance'])) {
 						$itemEntry['instance'] = $item;
 						$this->fileCache->set($url, $itemEntry);
 					}
@@ -622,8 +620,8 @@ class Storage extends Common {
 
 		$item = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
-		if(isset($entry['permissions'])) {
-			if($entry['permissions'] === false) {
+		if (isset($entry['permissions'])) {
+			if ($entry['permissions'] === false) {
 				throw new NotFoundException('Could not retrieve permissions');
 			}
 			return $entry['permissions'];
@@ -635,7 +633,7 @@ class Storage extends Common {
 		}
 		$entry['permissions'] = $permissions;
 		$this->fileCache->set($serverUrl, $entry);
-		if($entry['permissions'] === false) {
+		if ($entry['permissions'] === false) {
 			throw new NotFoundException('Could not retrieve permissions');
 		}
 		return $entry['permissions'];
@@ -648,9 +646,9 @@ class Storage extends Common {
 	 */
 	private function getFileOrFolder($serverUrl) {
 		$entry = $this->fileCache->get($serverUrl);
-		if($entry === false) {
+		if ($entry === false) {
 			throw new NotFoundException('File or Folder not found');
-		} else if($entry === null || !isset($entry['instance'])) {
+		} elseif ($entry === null || !isset($entry['instance'])) {
 			try {
 				$file = $this->spClient->fetchFileOrFolder($serverUrl);
 			} catch (NotFoundException $e) {
@@ -679,18 +677,17 @@ class Storage extends Common {
 		$path = trim($path, '/');
 		$docLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
 		$serverUrl = $docLib->getRootFolder()->getProperty(self::SP_PROPERTY_URL);
-		if($path !== '') {
+		if ($path !== '') {
 			$serverUrl .= '/' . $path;
 		}
 
 		$pathParts = explode('/', $serverUrl);
 		$filename = array_pop($pathParts);
-		if($filename === '.') {
+		if ($filename === '.') {
 			// remove /. from the end of the path
 			$serverUrl = mb_substr($serverUrl, 0, mb_strlen($serverUrl) - 2);
 		}
 
 		return $serverUrl;
 	}
-
 }

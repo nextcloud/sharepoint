@@ -24,5 +24,4 @@
 namespace OCA\SharePoint;
 
 class NotFoundException extends \Exception {
-
 }
