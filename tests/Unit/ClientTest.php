@@ -23,8 +23,10 @@
 
 namespace OCA\SharePoint\Tests\Unit;
 
+use Exception;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
+use OCA\SharePoint\NotFoundException;
 use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
 use Office365\PHP\Client\Runtime\ClientObject;
 use Office365\PHP\Client\SharePoint\ClientContext;
@@ -135,8 +137,6 @@ class SharePointClientTest extends TestCase {
 	}
 
 	/**
-	 * @expectedException \OCA\SharePoint\NotFoundException
-	 *
 	 * also fully covers fetchFolder(), loadAndExecute(), createClientContext()
 	 */
 	public function testFetchNotExistingByFileOrFolder() {
@@ -174,19 +174,21 @@ class SharePointClientTest extends TestCase {
 			->withConsecutive([$fileMock, $properties], [$listItemMock, $this->anything()], [$folderMock, $properties]);
 		$clientContextMock->expects($this->exactly(2))
 			->method('executeQuery')
-			->willReturnCallback(function () {
+			->willReturnCallback(function () use ($path) {
 				static $cnt = 0;
 				$cnt++;
 				if($cnt === 1) {
-					throw new \Exception('The file /whatwasitsname does not exist.');
+					throw new Exception('The file ' . $path . ' does not exist.');
 				} else if ($cnt === 2) {
-					throw new \Exception('Unknown Error');
+					throw new Exception('Unknown Error');
 				}
 			});
 
 		$this->contextsFactory->expects($this->exactly(1))
 			->method('getClientContext')
 			->willReturn($clientContextMock);
+
+		$this->expectException(NotFoundException::class);
 
 		$this->client->fetchFileOrFolder($path, $properties);
 	}
@@ -230,9 +232,6 @@ class SharePointClientTest extends TestCase {
 		$this->client->createFolder($path);
 	}
 
-	/**
-	 * @expectedException \Exception
-	 */
 	public function testCreateFolderError() {
 		$dirName = 'New Project Dir';
 		$parentPath = '/' . $this->documentLibraryTitle . '/Our Directory';
@@ -264,12 +263,13 @@ class SharePointClientTest extends TestCase {
 			->willReturn($webMock);
 		$clientContextMock->expects($this->once())
 			->method('executeQuery')
-			->willThrowException(new \Exception('Whatever'));
+			->willThrowException(new Exception('Whatever'));
 
 		$this->contextsFactory->expects($this->exactly(1))
 			->method('getClientContext')
 			->willReturn($clientContextMock);
 
+		$this->expectException(Exception::class);
 		$this->client->createFolder($path);
 	}
 

@@ -103,7 +103,8 @@ class Client {
 				$instance = call_user_func_array($fetchFunction, [$path, $properties]);
 				return $instance;
 			} catch (\Exception $e) {
-				if(preg_match('/^The file \/.* does not exist\.$/', $e->getMessage()) !== 1
+				if (
+					strpos($e->getMessage(), $path) === false
 					&& $e->getMessage() !== 'Unknown Error'
 					&& $e->getMessage() !== 'File Not Found.'
 					&& !$this->isErrorDoesNotExist($e)
