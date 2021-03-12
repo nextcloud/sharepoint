@@ -8,6 +8,7 @@ krankerl.toml
 Makefile
 .nextcloudignore
 phpunit.*
+.php_cs.dist
 screenshots
 .scrutinizer.yml
 tests
