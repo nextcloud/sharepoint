@@ -1,5 +1,6 @@
 [package]
 
 before_cmds = [
-        "composer install"
+        "composer install --no-dev",
+        "composer remove --update-no-dev cweagans/composer-patches"
 ]
