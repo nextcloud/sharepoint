@@ -23,26 +23,23 @@
 
 namespace OCA\SharePoint\AppInfo;
 
-use OCA\Files_External\Service\BackendService;
-use OCA\SharePoint\AuthMechanism\Provider as AuthMechanismProvider;
-use OCA\SharePoint\Backend\Provider;
-use OCP\AppFramework\App;
+require_once __DIR__ . '/../../vendor/autoload.php';
 
-class Application extends App {
+use OCA\SharePoint\Listener\ExternalStoragesRegistrationListener;
+use OCP\AppFramework\App;
+use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\Bootstrap\IBootstrap;
+use OCP\AppFramework\Bootstrap\IRegistrationContext;
+
+class Application extends App implements IBootstrap {
 	public function __construct() {
 		parent::__construct('sharepoint');
 	}
 
-	public function registerBackendProvider() {
-		$server = $this->getContainer()->getServer();
+	public function register(IRegistrationContext $context): void {
+		$context->registerEventListener('OCA\\Files_External::loadAdditionalBackends', ExternalStoragesRegistrationListener::class);
+	}
 
-		/** @var Provider $ntlmAuth */
-		$spAuthMechanismProvider = $server->get(AuthMechanismProvider::class);
-
-		$backendProvider = new Provider($server->getL10NFactory());
-		/** @var BackendService $backendService */
-		$backendService = $server->getStoragesBackendService();
-		$backendService->registerBackendProvider($backendProvider);
-		$backendService->registerAuthMechanismProvider($spAuthMechanismProvider);
+	public function boot(IBootContext $context): void {
 	}
 }
