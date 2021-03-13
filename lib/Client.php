@@ -44,6 +44,8 @@ class Client {
 
 	/** @var  AuthenticationContext */
 	protected $authContext;
+	/** @var array */
+	protected $options;
 
 	/** @var ContextsFactory */
 	private $contextsFactory;
@@ -63,21 +65,16 @@ class Client {
 		Storage::SP_PROPERTY_SIZE,
 	];
 
-	/**
-	 * SharePointClient constructor.
-	 *
-	 * @param ContextsFactory $contextsFactory
-	 * @param string $sharePointUrl
-	 * @param array $credentials
-	 */
 	public function __construct(
 		ContextsFactory $contextsFactory,
-		$sharePointUrl,
-		array $credentials
+		string $sharePointUrl,
+		array $credentials,
+		array $options
 	) {
 		$this->contextsFactory = $contextsFactory;
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
+		$this->options = $options;
 	}
 
 	/**
@@ -466,6 +463,9 @@ class Client {
 		}
 
 		try {
+			if ($this->options['ntlmOnly'] ?? false) {
+				throw new \Exception('NTLM only option');
+			}
 			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
 			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
 		} catch (\Exception $e) {

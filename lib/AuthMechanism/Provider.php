@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 /**
- * @copyright Copyright (c) 2017 Arthur Schiwon <blizzz@arthur-schiwon.de>
+ * @copyright Copyright (c) 2021 Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
  * @author Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
@@ -21,17 +22,21 @@
  *
  */
 
-namespace OCA\SharePoint;
+namespace OCA\SharePoint\AuthMechanism;
 
-class ClientFactory {
+use OCA\Files_External\Lib\Config\IAuthMechanismProvider;
+use OCP\IServerContainer;
 
-	public function getClient(
-		ContextsFactory $contextsFactory,
-		string $sharePointUrl,
-		array $credentials,
-		array $options = []
-	): Client
-	{
-		return new Client($contextsFactory, $sharePointUrl, $credentials, $options);
+class Provider implements IAuthMechanismProvider {
+
+	/** @var IServerContainer */
+	private $c;
+
+	public function __construct(IServerContainer $c) {
+		$this->c = $c;
+	}
+
+	public function getAuthMechanisms() {
+		return [ $this->c->get(NTLM::class)];
 	}
 }
