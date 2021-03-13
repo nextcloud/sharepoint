@@ -24,6 +24,7 @@
 namespace OCA\SharePoint\AppInfo;
 
 use OCA\Files_External\Service\BackendService;
+use OCA\SharePoint\AuthMechanism\Provider as AuthMechanismProvider;
 use OCA\SharePoint\Backend\Provider;
 use OCP\AppFramework\App;
 
@@ -35,9 +36,13 @@ class Application extends App {
 	public function registerBackendProvider() {
 		$server = $this->getContainer()->getServer();
 
+		/** @var Provider $ntlmAuth */
+		$spAuthMechanismProvider = $server->get(AuthMechanismProvider::class);
+
 		$backendProvider = new Provider($server->getL10NFactory());
 		/** @var BackendService $backendService */
 		$backendService = $server->getStoragesBackendService();
 		$backendService->registerBackendProvider($backendProvider);
+		$backendService->registerAuthMechanismProvider($spAuthMechanismProvider);
 	}
 }

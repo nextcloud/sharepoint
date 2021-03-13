@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 /**
- * @copyright Copyright (c) 2016 Arthur Schiwon <blizzz@arthur-schiwon.de>
+ * @copyright Copyright (c) 2021 Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
  * @author Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
@@ -21,27 +22,29 @@
  *
  */
 
-namespace OCA\SharePoint\Backend;
+namespace OCA\SharePoint\AuthMechanism;
 
 use OCA\Files_External\Lib\Auth\AuthMechanism;
-use OCA\Files_External\Lib\Auth\Password\Password;
 use OCA\Files_External\Lib\DefinitionParameter;
-use OCA\SharePoint\Storage\Storage;
+use OCA\Files_External\Lib\StorageConfig;
 use OCP\IL10N;
+use OCP\IUser;
 
-class Backend extends \OCA\Files_External\Lib\Backend\Backend {
-	public function __construct(IL10N $l, Password $legacyAuth) {
+class NTLM extends AuthMechanism {
+	public function __construct(IL10N $l) {
 		$this
-			->setIdentifier('sharepoint')
-			->setStorageClass(Storage::class)
-			->setText($l->t('SharePoint'))
+			->setIdentifier('sharepoint::ntlm')
+			->setScheme('sharepoint')
+			->setText($l->t('Username and password (NTLM only)'))
 			->addParameters([
-				(new DefinitionParameter('host', $l->t('Host'))),
-				(new DefinitionParameter('documentLibrary', $l->t('Document Library'))),
-			])
-			->addAuthScheme(AuthMechanism::SCHEME_PASSWORD)
-			->addAuthScheme('sharepoint')
-			->setLegacyAuthMechanism($legacyAuth)
-		;
+				new DefinitionParameter('user', $l->t('Username')),
+				(new DefinitionParameter('password', $l->t('Password')))
+					->setType(DefinitionParameter::VALUE_PASSWORD),
+				//$ntlmP
+			]);
+	}
+
+	public function manipulateStorageConfig(StorageConfig &$storage, IUser $user = null) {
+		$storage->setBackendOption('ntlmOnly', true);
 	}
 }
