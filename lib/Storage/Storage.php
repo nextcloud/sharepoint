@@ -27,10 +27,10 @@ use Icewind\Streams\CallbackWrapper;
 use Icewind\Streams\IteratorDirectory;
 use OC\Cache\CappedMemoryCache;
 use OC\Files\Storage\Common;
-use OCA\SharePoint\ContextsFactory;
-use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
+use OCA\SharePoint\ContextsFactory;
+use OCA\SharePoint\NotFoundException;
 use OCP\Files\FileInfo;
 use OCP\ILogger;
 use OCP\ITempManager;
@@ -68,6 +68,8 @@ class Storage extends Common {
 
 	/** @var  CappedMemoryCache */
 	protected $fileCache;
+	/** @var false|mixed */
+	protected $forceNtlm;
 
 	/** @var ContextsFactory */
 	private $contextsFactory;
@@ -91,6 +93,7 @@ class Storage extends Common {
 		}
 		$this->authUser = $parameters['user'];
 		$this->authPwd = $parameters['password'];
+		$this->forceNtlm = $parameters['forceNtlm'] ?? false;
 
 		$this->fixDI($parameters);
 	}
@@ -556,7 +559,8 @@ class Storage extends Common {
 		$this->spClient = $spcFactory->getClient(
 			$this->contextsFactory,
 			$this->server,
-			[ 'user' => $this->authUser, 'password' => $this->authPwd]
+			['user' => $this->authUser, 'password' => $this->authPwd],
+			['forceNtlm' => $this->forceNtlm]
 		);
 
 		if (isset($parameters['cappedMemoryCache'])) {
