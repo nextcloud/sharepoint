@@ -57,7 +57,7 @@ class Client {
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
 
-	const DEFAULT_PROPERTIES = [
+	public const DEFAULT_PROPERTIES = [
 		Storage::SP_PROPERTY_MTIME,
 		Storage::SP_PROPERTY_NAME,
 		Storage::SP_PROPERTY_SIZE,
@@ -91,10 +91,14 @@ class Client {
 	 * @throws \Exception
 	 */
 	public function fetchFileOrFolder($path, array $properties = null) {
-		$fetchFileFunc = function ($path, $props) { return $this->fetchFile($path, $props);};
-		$fetchFolderFunc = function ($path, $props) { return $this->fetchFolder($path, $props);};
+		$fetchFileFunc = function ($path, $props) {
+			return $this->fetchFile($path, $props);
+		};
+		$fetchFolderFunc = function ($path, $props) {
+			return $this->fetchFolder($path, $props);
+		};
 		$fetchers = [ $fetchFileFunc, $fetchFolderFunc ];
-		if(strpos($path, '.') === false) {
+		if (strpos($path, '.') === false) {
 			$fetchers = array_reverse($fetchers);
 		}
 
@@ -121,7 +125,7 @@ class Client {
 
 	private function isErrorDoesNotExist(\Exception $e): bool {
 		$trace = $e->getTrace()[0];
-		if($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
+		if ($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
 			return false;
 		}
 		$error = json_decode($trace['args'][0], true)['error'];
@@ -190,7 +194,7 @@ class Client {
 	 * @throws \Exception
 	 */
 	public function getFileViaStream($relativeServerPath, $fp) {
-		if(!is_resource($fp)) {
+		if (!is_resource($fp)) {
 			throw new \InvalidArgumentException('file resource expected');
 		}
 		$this->ensureConnection();
@@ -257,9 +261,9 @@ class Client {
 		$this->ensureConnection();
 
 		$item = $this->fetchFileOrFolder($oldPath);
-		if($item instanceof File) {
+		if ($item instanceof File) {
 			$this->renameFile($item, $newPath);
-		} else if($item instanceof Folder) {
+		} elseif ($item instanceof Folder) {
 			$this->renameFolder($item, $newPath);
 		} else {
 			return false;
@@ -308,7 +312,7 @@ class Client {
 		$this->ensureConnection();
 		if ($item instanceof File) {
 			$this->deleteFile($item);
-		} else if ($item instanceof Folder) {
+		} elseif ($item instanceof Folder) {
 			$this->deleteFolder($item);
 		}
 	}
@@ -364,10 +368,10 @@ class Client {
 	public function isHidden(ClientObject $file) {
 		// ClientObject itself does not have getListItemAllFields but is
 		// the common denominator of File and Folder
-		if(!$file instanceof File && !$file instanceof Folder) {
+		if (!$file instanceof File && !$file instanceof Folder) {
 			throw new \InvalidArgumentException('File or Folder expected');
 		}
-		if($file instanceof File) {
+		if ($file instanceof File) {
 			// it's expensive, we only check folders
 			return false;
 		}
@@ -384,7 +388,7 @@ class Client {
 	 * @return BasePermissions
 	 */
 	public function getPermissions(ClientObject $item) {
-		if(!$item instanceof File && !$item instanceof Folder) {
+		if (!$item instanceof File && !$item instanceof Folder) {
 			throw new \InvalidArgumentException('File or Folder expected');
 		}
 		$this->ensureConnection();
@@ -392,7 +396,7 @@ class Client {
 		$listItem = $item->getListItemAllFields();
 		$this->loadAndExecute($listItem, ['EffectiveBasePermissions']);
 		$data = $listItem->getProperty('EffectiveBasePermissions');
-		if(!is_object($data) || !property_exists($data, 'High') || !property_exists($data, 'Low')) {
+		if (!is_object($data) || !property_exists($data, 'High') || !property_exists($data, 'Low')) {
 			throw new \RuntimeException('Unexpected value from SP Server');
 		}
 		$permissions = new BasePermissions();
@@ -416,7 +420,7 @@ class Client {
 
 	public function getDocumentLibrary(string $documentLibrary): SPList {
 		static $list = null;
-		if($list instanceof SPList) {
+		if ($list instanceof SPList) {
 			return $list;
 		}
 
@@ -424,7 +428,7 @@ class Client {
 		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
 		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
 		$this->loadAndExecute($lists);
-		if($lists instanceof SPList) {
+		if ($lists instanceof SPList) {
 			$list = $lists;
 			$rFolder = $list->getRootFolder();
 			$this->loadAndExecute($rFolder);
@@ -450,14 +454,14 @@ class Client {
 	 * @throws \InvalidArgumentException
 	 */
 	private function ensureConnection() {
-		if($this->context instanceof ClientContext) {
+		if ($this->context instanceof ClientContext) {
 			return;
 		}
 
-		if(!is_string($this->credentials['user']) || empty($this->credentials['user'])) {
+		if (!is_string($this->credentials['user']) || empty($this->credentials['user'])) {
 			throw new \InvalidArgumentException('No user given');
 		}
-		if(!is_string($this->credentials['password']) || empty($this->credentials['password'])) {
+		if (!is_string($this->credentials['password']) || empty($this->credentials['password'])) {
 			throw new \InvalidArgumentException('No password given');
 		}
 
@@ -474,5 +478,4 @@ class Client {
 
 		$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->authContext);
 	}
-
 }
