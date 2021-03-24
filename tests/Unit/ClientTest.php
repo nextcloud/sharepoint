@@ -58,7 +58,8 @@ class SharePointClientTest extends TestCase {
 		$this->client = new Client(
 			$this->contextsFactory,
 			'my.sp.server',
-			$credentials
+			$credentials,
+			[]
 		);
 	}
 
@@ -393,5 +394,55 @@ class SharePointClientTest extends TestCase {
 		$result = $this->client->fetchFolderContents($folderMock);
 		$this->assertSame($result['folders'], $folderCollectionMock);
 		$this->assertSame($result['files'], $fileCollectionMock);
+	}
+
+	public function authOptionsProvider(): array {
+		return [
+			#0: NTLM not enforced, auth token successful
+			[ false, true ],
+			#1: NTLM not enforced, auth token not successful
+			[ false, false ],
+			#1: NTLM enforced
+			[ true ]
+		];
+	}
+
+	/**
+	 * @dataProvider authOptionsProvider
+	 */
+	public function testConnectionNtlmHandling(bool $forceNtlm, bool $tokenAuthSuccess = false): void {
+		$credentials = ['user' => 'foobar', 'password' => 'barfoo'];
+
+		if ($forceNtlm) {
+			$this->contextsFactory->expects($this->never())
+				->method('getTokenAuthContext');
+		} else {
+			$tokenAuthContext = $this->createMock(AuthenticationContext::class);
+			$tokenAuthContext->expects($this->once())
+				->method('acquireTokenForUser')
+				->with($credentials['user'], $credentials['password'])
+				->willReturnCallback(function (string $user, string $pwd) use ($tokenAuthSuccess) {
+					if ($tokenAuthSuccess) {
+						return;
+					}
+					throw new \Exception('You shall not token auth here');
+				});
+
+			$this->contextsFactory->expects($this->once())
+				->method('getTokenAuthContext')
+				->willReturn($tokenAuthContext);
+		}
+
+		$this->contextsFactory->expects($this->once())
+			->method('getClientContext');
+
+		$client = new Client(
+			$this->contextsFactory,
+			'my.sp.server',
+			$credentials,
+			[ 'forceNtlm' => $forceNtlm ]
+		);
+
+		$this->invokePrivate($client, 'ensureConnection');
 	}
 }
