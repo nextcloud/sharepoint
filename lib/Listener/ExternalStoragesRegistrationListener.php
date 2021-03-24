@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
 /**
- * @copyright Copyright (c) 2017 Arthur Schiwon <blizzz@arthur-schiwon.de>
+ * @copyright Copyright (c) 2020 Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
  * @author Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
@@ -21,25 +23,29 @@
  *
  */
 
-namespace OCA\SharePoint\AppInfo;
+namespace OCA\SharePoint\Listener;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+use OCA\Files_External\Service\BackendService;
+use OCA\SharePoint\Backend\Provider as BackendProvider;
+use OCP\EventDispatcher\Event;
+use OCP\EventDispatcher\IEventListener;
 
-use OCA\SharePoint\Listener\ExternalStoragesRegistrationListener;
-use OCP\AppFramework\App;
-use OCP\AppFramework\Bootstrap\IBootContext;
-use OCP\AppFramework\Bootstrap\IBootstrap;
-use OCP\AppFramework\Bootstrap\IRegistrationContext;
+class ExternalStoragesRegistrationListener implements IEventListener {
 
-class Application extends App implements IBootstrap {
-	public function __construct() {
-		parent::__construct('sharepoint');
+	/** @var BackendService */
+	private $backendService;
+	/** @var BackendProvider */
+	private $backendProvider;
+
+	public function __construct(
+		BackendService $backendService,
+		BackendProvider $backendProvider
+	) {
+		$this->backendService = $backendService;
+		$this->backendProvider = $backendProvider;
 	}
 
-	public function register(IRegistrationContext $context): void {
-		$context->registerEventListener('OCA\\Files_External::loadAdditionalBackends', ExternalStoragesRegistrationListener::class);
-	}
-
-	public function boot(IBootContext $context): void {
+	public function handle(Event $event): void {
+		$this->backendService->registerBackendProvider($this->backendProvider);
 	}
 }

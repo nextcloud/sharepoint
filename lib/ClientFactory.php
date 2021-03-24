@@ -24,17 +24,12 @@
 namespace OCA\SharePoint;
 
 class ClientFactory {
-	/**
-	 * @param ContextsFactory $contextsFactory
-	 * @param string $sharePointUrl
-	 * @param array $credentials
-	 * @param string $documentLibraryTitle
-	 * @return Client
-	 */
 	public function getClient(
 		ContextsFactory $contextsFactory,
-		$sharePointUrl,
-		array $credentials) {
-		return new Client($contextsFactory, $sharePointUrl, $credentials);
+		string $sharePointUrl,
+		array $credentials,
+		array $options = []
+	): Client {
+		return new Client($contextsFactory, $sharePointUrl, $credentials, $options);
 	}
 }
