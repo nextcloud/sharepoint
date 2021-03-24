@@ -26,7 +26,6 @@ declare(strict_types=1);
 namespace OCA\SharePoint\Listener;
 
 use OCA\Files_External\Service\BackendService;
-use OCA\SharePoint\AuthMechanism\Provider as AuthMechanismProvider;
 use OCA\SharePoint\Backend\Provider as BackendProvider;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -37,21 +36,16 @@ class ExternalStoragesRegistrationListener implements IEventListener {
 	private $backendService;
 	/** @var BackendProvider */
 	private $backendProvider;
-	/** @var AuthMechanismProvider */
-	private $authMechanismProvider;
 
 	public function __construct(
 		BackendService $backendService,
-		BackendProvider $backendProvider,
-		AuthMechanismProvider $authMechanismProvider
+		BackendProvider $backendProvider
 	) {
 		$this->backendService = $backendService;
 		$this->backendProvider = $backendProvider;
-		$this->authMechanismProvider = $authMechanismProvider;
 	}
 
 	public function handle(Event $event): void {
 		$this->backendService->registerBackendProvider($this->backendProvider);
-		$this->backendService->registerAuthMechanismProvider($this->authMechanismProvider);
 	}
 }

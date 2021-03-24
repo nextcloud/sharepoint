@@ -69,7 +69,7 @@ class Storage extends Common {
 	/** @var  CappedMemoryCache */
 	protected $fileCache;
 	/** @var false|mixed */
-	protected $ntlmOnly;
+	protected $forceNtlm;
 
 	/** @var ContextsFactory */
 	private $contextsFactory;
@@ -93,7 +93,7 @@ class Storage extends Common {
 		}
 		$this->authUser = $parameters['user'];
 		$this->authPwd = $parameters['password'];
-		$this->ntlmOnly = $parameters['ntlmOnly'] ?? false;
+		$this->forceNtlm = $parameters['forceNtlm'] ?? false;
 
 		$this->fixDI($parameters);
 	}
@@ -560,7 +560,7 @@ class Storage extends Common {
 			$this->contextsFactory,
 			$this->server,
 			['user' => $this->authUser, 'password' => $this->authPwd],
-			['ntlmOnly' => $this->ntlmOnly]
+			['forceNtlm' => $this->forceNtlm]
 		);
 
 		if (isset($parameters['cappedMemoryCache'])) {
