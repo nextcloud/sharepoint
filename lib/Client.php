@@ -23,6 +23,7 @@
 
 namespace OCA\SharePoint;
 
+use Exception;
 use function explode;
 use function json_decode;
 use OCA\SharePoint\Storage\Storage;
@@ -44,6 +45,8 @@ class Client {
 
 	/** @var  AuthenticationContext */
 	protected $authContext;
+	/** @var array */
+	protected $options;
 
 	/** @var ContextsFactory */
 	private $contextsFactory;
@@ -63,21 +66,16 @@ class Client {
 		Storage::SP_PROPERTY_SIZE,
 	];
 
-	/**
-	 * SharePointClient constructor.
-	 *
-	 * @param ContextsFactory $contextsFactory
-	 * @param string $sharePointUrl
-	 * @param array $credentials
-	 */
 	public function __construct(
 		ContextsFactory $contextsFactory,
-		$sharePointUrl,
-		array $credentials
+		string $sharePointUrl,
+		array $credentials,
+		array $options
 	) {
 		$this->contextsFactory = $contextsFactory;
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
+		$this->options = $options;
 	}
 
 	/**
@@ -88,7 +86,7 @@ class Client {
 	 * @param array $properties
 	 * @return File|Folder
 	 * @throws NotFoundException
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function fetchFileOrFolder($path, array $properties = null) {
 		$fetchFileFunc = function ($path, $props) {
@@ -106,7 +104,7 @@ class Client {
 			try {
 				$instance = call_user_func_array($fetchFunction, [$path, $properties]);
 				return $instance;
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				if (
 					strpos($e->getMessage(), $path) === false
 					&& $e->getMessage() !== 'Unknown Error'
@@ -123,7 +121,7 @@ class Client {
 		throw new NotFoundException('File or Folder not found');
 	}
 
-	private function isErrorDoesNotExist(\Exception $e): bool {
+	private function isErrorDoesNotExist(Exception $e): bool {
 		$trace = $e->getTrace()[0];
 		if ($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
 			return false;
@@ -173,7 +171,7 @@ class Client {
 	 *
 	 * @param string $relativeServerPath
 	 * @return Folder
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function createFolder($relativeServerPath) {
 		$this->ensureConnection();
@@ -191,7 +189,7 @@ class Client {
 	 * @param $relativeServerPath
 	 * @param resource $fp a file resource open for writing
 	 * @return bool
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function getFileViaStream($relativeServerPath, $fp) {
 		if (!is_resource($fp)) {
@@ -212,7 +210,7 @@ class Client {
 	 * @param resource $fp
 	 * @param string $localPath - we need to pass the file size for the content length header
 	 * @return bool
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath) {
 		$serverRelativeUrl = rawurlencode($relativeServerPath);
@@ -235,7 +233,7 @@ class Client {
 	 * @param $relativeServerPath
 	 * @param $content
 	 * @return File
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function uploadNewFile($relativeServerPath, $content) {
 		$parentFolder = $this->context->getWeb()->getFolderByServerRelativeUrl(dirname($relativeServerPath));
@@ -255,7 +253,7 @@ class Client {
 	 * @param string $oldPath
 	 * @param string $newPath
 	 * @return bool
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function rename($oldPath, $newPath) {
 		$this->ensureConnection();
@@ -321,7 +319,7 @@ class Client {
 	 * deletes (in fact recycles) the given file on SP
 	 *
 	 * @param File $file
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function deleteFile(File $file) {
 		$file->recycle();
@@ -466,9 +464,12 @@ class Client {
 		}
 
 		try {
+			if ($this->options['forceNtlm'] ?? false) {
+				throw new Exception('enforced NTLM auth');
+			}
 			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
 			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			// fall back to NTLM
 			$this->authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
 			$this->authContext->AuthType = CURLAUTH_NTLM;
