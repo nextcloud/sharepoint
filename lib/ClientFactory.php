@@ -34,8 +34,7 @@ class ClientFactory {
 	public function getClient(
 		ContextsFactory $contextsFactory,
 		$sharePointUrl,
-		array $credentials)
-	{
+		array $credentials) {
 		return new Client($contextsFactory, $sharePointUrl, $credentials);
 	}
 }
