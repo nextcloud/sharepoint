@@ -1,6 +1,8 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Enforce NTLM auth" : "NTML kimlik doğrulaması dayatılsın",
+    "Acquiring a SAML token is attempted first by default." : "Önce varsayılan olarak bir SAML kodu alınmaya çalışılır",
     "SharePoint" : "SharePoint",
     "Host" : "Sunucu",
     "Document Library" : "Belge Kitaplığı",
