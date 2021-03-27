@@ -1,6 +1,8 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Enforce NTLM auth" : "實施 NTLM 驗證",
+    "Acquiring a SAML token is attempted first by default." : "默認情況下，首先嘗試獲取 SAML 權杖。",
     "SharePoint" : "SharePoint",
     "Host" : "主機",
     "Document Library" : "文件庫",
