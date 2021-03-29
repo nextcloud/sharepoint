@@ -24,6 +24,7 @@
 namespace OCA\SharePoint\Tests\Unit;
 
 use Exception;
+use OCA\SharePoin\Helper\RequestsWrapper;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\NotFoundException;
@@ -47,16 +48,20 @@ class SharePointClientTest extends TestCase {
 
 	/** @var  Client */
 	protected $client;
+	/** @var RequestsWrapper|\PHPUnit\Framework\MockObject\MockObject */
+	protected $requestWrapper;
 
 	protected function setUp(): void {
 		parent::setUp();
 
 		$this->contextsFactory = $this->createMock(ContextsFactory::class);
+		$this->requestWrapper = $this->createMock(RequestsWrapper::class);
 		$credentials = ['user' => 'foobar', 'password' => 'barfoo'];
 		$this->documentLibraryTitle = 'Our Docs';
 
 		$this->client = new Client(
 			$this->contextsFactory,
+			$this->requestWrapper,
 			'my.sp.server',
 			$credentials,
 			[]
@@ -147,6 +152,23 @@ class SharePointClientTest extends TestCase {
 		$this->contextsFactory->expects($this->once())
 			->method('getTokenAuthContext')
 			->willReturn($this->createMock(AuthenticationContext::class));
+
+		$this->requestWrapper->expects($this->once())
+			->method('getHistory')
+			->willReturn([
+				[
+					'request' => [],
+					'response' => '{
+						"error": {
+							"code": "-1, Microsoft.SharePoint.SPException",
+							"message": {
+								"lang": "en-US",
+								"value": "Unknown error"
+							}
+						}
+					}',
+				]
+			]);
 
 		$fileMock = $this->createMock(File::class);
 
@@ -438,6 +460,7 @@ class SharePointClientTest extends TestCase {
 
 		$client = new Client(
 			$this->contextsFactory,
+			$this->requestWrapper,
 			'my.sp.server',
 			$credentials,
 			[ 'forceNtlm' => $forceNtlm ]
