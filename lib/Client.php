@@ -25,12 +25,12 @@ namespace OCA\SharePoint;
 
 use function explode;
 use function json_decode;
+use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\Storage\Storage;
 use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
 use Office365\PHP\Client\Runtime\ClientObject;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
 use Office365\PHP\Client\Runtime\Utilities\RequestOptions;
-use Office365\PHP\Client\Runtime\Utilities\Requests;
 use Office365\PHP\Client\SharePoint\BasePermissions;
 use Office365\PHP\Client\SharePoint\ClientContext;
 use Office365\PHP\Client\SharePoint\File;
@@ -39,6 +39,12 @@ use Office365\PHP\Client\SharePoint\Folder;
 use Office365\PHP\Client\SharePoint\SPList;
 
 class Client {
+	public const DEFAULT_PROPERTIES = [
+		Storage::SP_PROPERTY_MTIME,
+		Storage::SP_PROPERTY_NAME,
+		Storage::SP_PROPERTY_SIZE,
+	];
+
 	/** @var  ClientContext */
 	protected $context;
 
@@ -57,11 +63,8 @@ class Client {
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
 
-	public const DEFAULT_PROPERTIES = [
-		Storage::SP_PROPERTY_MTIME,
-		Storage::SP_PROPERTY_NAME,
-		Storage::SP_PROPERTY_SIZE,
-	];
+	/** @var RequestsWrapper */
+	private $requestsWrapper;
 
 	/**
 	 * SharePointClient constructor.
@@ -109,8 +112,6 @@ class Client {
 			} catch (\Exception $e) {
 				if (
 					strpos($e->getMessage(), $path) === false
-					&& $e->getMessage() !== 'Unknown Error'
-					&& $e->getMessage() !== 'File Not Found.'
 					&& !$this->isErrorDoesNotExist($e)
 				) {
 					# Unexpected Exception, pass it on
@@ -125,12 +126,29 @@ class Client {
 
 	private function isErrorDoesNotExist(\Exception $e): bool {
 		$trace = $e->getTrace()[0];
-		if ($trace['function'] !== 'validateResponse' || !isset($trace['args'][0])) {
-			return false;
+		if ($trace['function'] === 'validateResponse' && isset($trace['args'][0])) {
+			$responseCodeJson = json_decode($trace['args'][0], true)['error'];
+		} else {
+			$lastRequest = $this->getLastRequestData();
+			if (!isset($lastRequest['response'])) {
+				return null;
+			}
+
+			$responseData = $lastRequest['response']
+				? json_decode($lastRequest['response'], true)
+				: [];
+
+			if (!isset($responseData['error'])) {
+				return null;
+			}
+			$responseCodeJson = $responseData['error'];
 		}
-		$error = json_decode($trace['args'][0], true)['error'];
-		$errorCode = (int)explode(',', $error['code'])[0];
-		return in_array($errorCode, [
+
+		return (int)explode(',', $responseCodeJson['code'])[0];
+	}
+
+	private function isErrorDoesNotExist(Exception $e): bool {
+		return in_array($this->findSharePointErrorCode($e), [
 			-2146232832, # Microsoft.SharePoint.SPException (unclear)
 			-2147024894, # File cannot be found
 			-1, # unknown error
@@ -294,13 +312,9 @@ class Client {
 		$this->context->executeQuery();
 	}
 
-	/**
-	 * @return array
-	 */
-	private function _debugGetLastRequest() {
-		$requestHistory = Requests::getHistory();
-		$request = array_pop($requestHistory);
-		return $request;
+	private function getLastRequestData(): array {
+		$requestHistory = $this->requestsWrapper->getHistory();
+		return array_pop($requestHistory);
 	}
 
 	/**

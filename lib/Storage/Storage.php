@@ -28,6 +28,7 @@ use Icewind\Streams\IteratorDirectory;
 use OC\Cache\CappedMemoryCache;
 use OC\Files\Storage\Common;
 use OCA\SharePoint\ContextsFactory;
+use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
@@ -551,7 +552,7 @@ class Storage extends Common {
 			&& $parameters['sharePointClientFactory'] instanceof ClientFactory) {
 			$spcFactory = $parameters['sharePointClientFactory'];
 		} else {
-			$spcFactory = new ClientFactory();
+			$spcFactory = new ClientFactory(new RequestsWrapper());
 		}
 		$this->spClient = $spcFactory->getClient(
 			$this->contextsFactory,
