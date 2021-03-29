@@ -1,6 +1,8 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Enforce NTLM auth" : "NTLM-Auth erzwingen",
+    "Acquiring a SAML token is attempted first by default." : "Standardmäßig wird zuerst versucht, ein SAML-Token zu bekommen.",
     "SharePoint" : "SharePoint",
     "Host" : "Hostcomputer",
     "Document Library" : "Dokumentbibliothek",
