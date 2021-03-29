@@ -35,6 +35,7 @@ use OCA\SharePoint\NotFoundException;
 use OCP\Files\FileInfo;
 use OCP\ILogger;
 use OCP\ITempManager;
+use Office365\PHP\Client\Runtime\ClientObject;
 use Office365\PHP\Client\Runtime\ClientObjectCollection;
 use Office365\PHP\Client\SharePoint\File;
 use Office365\PHP\Client\SharePoint\Folder;
@@ -330,7 +331,8 @@ class Storage extends Common {
 		}
 		try {
 			$serverUrl = $this->formatPath($path);
-			$this->spClient->delete($this->getFileOrFolder($serverUrl));
+			$item = $this->getFileOrFolderForQuery($serverUrl);
+			$this->spClient->delete($item);
 			$this->fileCache->set($serverUrl, false);
 			return true;
 		} catch (\Exception $e) {
@@ -670,6 +672,21 @@ class Storage extends Common {
 			$file = $entry['instance'];
 		}
 		return $file;
+	}
+
+	private function getFileOrFolderForQuery(string $serverUrl): ClientObject {
+		$entry = $this->fileCache->get($serverUrl);
+		$item = is_array($entry) && $entry['instance']
+			? $entry['instance']
+			: null;
+
+		// entries from getFolderContents may have not resourcePath set, and
+		// request against this would fail, e.g. on delete.
+		if ($item instanceof ClientObject && $item->getResourcePath() === null) {
+			$this->fileCache->remove($serverUrl);
+			$item = null;
+		}
+		return $item ?? $this->getFileOrFolder($serverUrl);
 	}
 
 	/**
