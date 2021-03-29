@@ -1,6 +1,8 @@
 <?php
+
+declare(strict_types=1);
 /**
- * @copyright Copyright (c) 2017 Arthur Schiwon <blizzz@arthur-schiwon.de>
+ * @copyright Copyright (c) 2021 Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
  * @author Arthur Schiwon <blizzz@arthur-schiwon.de>
  *
@@ -21,30 +23,12 @@
  *
  */
 
-namespace OCA\SharePoint;
+namespace OCA\SharePoint\Helper;
 
-use OCA\SharePoint\Helper\RequestsWrapper;
+use Office365\PHP\Client\Runtime\Utilities\Requests;
 
-class ClientFactory {
-	/** @var RequestsWrapper */
-	private $requestsWrapper;
-
-	public function __construct(RequestsWrapper  $requestsWrapper) {
-		$this->requestsWrapper = $requestsWrapper;
-	}
-
-	public function getClient(
-		ContextsFactory $contextsFactory,
-		string $sharePointUrl,
-		array $credentials,
-		array $options = []
-	): Client {
-		return new Client(
-			$contextsFactory,
-			$this->requestsWrapper,
-			$sharePointUrl,
-			$credentials,
-			$options
-		);
+class RequestsWrapper {
+	public function getHistory(): array {
+		return Requests::getHistory();
 	}
 }
