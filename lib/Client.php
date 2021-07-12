@@ -486,6 +486,13 @@ class Client {
 			$this->authContext = $this->contextsFactory->getTokenAuthContext($this->sharePointUrl);
 			$this->authContext->acquireTokenForUser($this->credentials['user'], $this->credentials['password']);
 		} catch (Exception $e) {
+			\OC::$server->getLogger()->logException($e,
+				[
+					'message' => 'Failed to acquire token for user, fall back to NTLM auth',
+					'app' => 'sharepoint',
+					'level' => ILogger::DEBUG
+				]
+			);
 			// fall back to NTLM
 			$this->authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
 			$this->authContext->AuthType = CURLAUTH_NTLM;
