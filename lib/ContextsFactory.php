@@ -24,6 +24,7 @@
 
 namespace OCA\SharePoint;
 
+use Office365\Runtime\Auth\UserCredentials;
 use Office365\SharePoint\ClientContext;
 
 class ContextsFactory {
@@ -31,7 +32,34 @@ class ContextsFactory {
 	/**
 	 * @throws \Exception
 	 */
-	public function getClientContext(string $url, string $user, string $password): ClientContext {
-		return ClientContext::connectWithUserCredentials($url, $user, $password);
+	public function getClientContext(
+		string $url,
+		string $user,
+		string $password,
+		bool $useNtlm = false
+	): ClientContext {
+		$clientContext = new ClientContext($url);
+		$credentials = new UserCredentials($user, $password);
+		if ($useNtlm) {
+			return $this->getWithNtlm($clientContext, $credentials);
+		}
+		return $this->withCredentials($clientContext, $credentials);
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	protected function withCredentials(
+		ClientContext $clientContext,
+		UserCredentials $userCredentials
+	): ClientContext {
+		return $clientContext->withCredentials($userCredentials);
+	}
+
+	protected function getWithNtlm(
+		ClientContext $clientContext,
+		UserCredentials $userCredentials
+	) {
+		return $clientContext->withNtlm($userCredentials);
 	}
 }

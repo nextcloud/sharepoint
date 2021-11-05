@@ -23,10 +23,10 @@
 
 namespace OCA\SharePoint\Command;
 
+use OC\Core\Command\Base;
 use OCA\SharePoint\ClientFactory;
 use OCA\SharePoint\ContextsFactory;
 use Office365\SharePoint\SPList;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -35,12 +35,119 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
-class ListLibraries extends Command {
+class ListLibraries extends Base {
 
 	/** @var ClientFactory */
 	protected $clientFactory;
 	/** @var ContextsFactory */
 	protected $ctxFactory;
+
+	/**
+	 * from: egrep -o 'getProperty\("[^"]*"' vendor/vgrem/php-spo/src/SharePoint/SPList.php | egrep -o '"[^"]*"' | tr '"' "'"
+	 * @var string[]
+	 */
+	public const ALL_PROPERTIES = [
+		'AdditionalUXProperties',
+		'AllowContentTypes',
+		'AllowDeletion',
+		'Author',
+		'BaseTemplate',
+		'BaseType',
+		'BrowserFileHandling',
+		'Color',
+		'ContentTypes',
+		'ContentTypes',
+		'ContentTypesEnabled',
+		'CrawlNonDefaultViews',
+		'CreatablesInfo',
+		'Created',
+		'CurrentChangeToken',
+		'CustomActionElements',
+		'DataSource',
+		'DefaultContentApprovalWorkflowId',
+		'DefaultDisplayFormUrl',
+		'DefaultEditFormUrl',
+		'DefaultItemOpenInBrowser',
+		'DefaultItemOpenUseListSetting',
+		'DefaultNewFormUrl',
+		'DefaultSensitivityLabelForLibrary',
+		'DefaultView',
+		'DefaultViewPath',
+		'DefaultViewUrl',
+		'Description',
+		'DescriptionResource',
+		'Direction',
+		'DisableCommenting',
+		'DisableGridEditing',
+		'DocumentTemplateUrl',
+		'DraftVersionVisibility',
+		'EffectiveBasePermissions',
+		'EffectiveBasePermissionsForUI',
+		'EnableAssignToEmail',
+		'EnableAttachments',
+		'EnableFolderCreation',
+		'EnableMinorVersions',
+		'EnableModeration',
+		'EnableRequestSignOff',
+		'EnableVersioning',
+		'EntityTypeName',
+		'ExcludeFromOfflineClient',
+		'ExemptFromBlockDownloadOfNonViewableFiles',
+		'Fields',
+		'FileSavePostProcessingEnabled',
+		'ForceCheckout',
+		'HasExternalDataSource',
+		'Hidden',
+		'Icon',
+		'Id',
+		'ImagePath',
+		'ImageUrl',
+		'InformationRightsManagementSettings',
+		'InformationRightsManagementSettings',
+		'IrmEnabled',
+		'IrmExpire',
+		'IrmReject',
+		'IsApplicationList',
+		'IsCatalog',
+		'IsDefaultDocumentLibrary',
+		'IsEnterpriseGalleryLibrary',
+		'IsPrivate',
+		'IsSiteAssetsLibrary',
+		'IsSystemList',
+		'ItemCount',
+		'LastItemDeletedDate',
+		'LastItemModifiedDate',
+		'LastItemUserModifiedDate',
+		'ListExperienceOptions',
+		'ListFormCustomized',
+		'ListItemEntityTypeFullName',
+		'ListSchemaVersion',
+		'MajorVersionLimit',
+		'MajorWithMinorVersionsLimit',
+		'MultipleDataList',
+		'NoCrawl',
+		'OnQuickLaunch',
+		'PageRenderType',
+		'ParentWeb',
+		'ParentWeb',
+		'ParentWebPath',
+		'ParentWebUrl',
+		'ParserDisabled',
+		'ReadSecurity',
+		'RootFolder',
+		'SchemaXml',
+		'ServerTemplateCanCreateFolders',
+		'ShowHiddenFieldsInModernForm',
+		'TemplateFeatureId',
+		'TemplateTypeId',
+		'Title',
+		'TitleResource',
+		'UserCustomActions',
+		'ValidationFormula',
+		'ValidationMessage',
+		'Views',
+		'WriteSecurity',
+	];
 
 	public function __construct(ClientFactory $clientFactory, ContextsFactory $ctxFactory) {
 		parent::__construct();
@@ -85,10 +192,13 @@ class ListLibraries extends Command {
 	protected function defaultOutput(OutputInterface $output, array $libraries, bool $json = false) {
 		$rows = [];
 		foreach ($libraries as $library) {
-			$mdate = new \DateTime($library->getProperties()['LastItemModifiedDate']);
+			if (!$library instanceof SPList) {
+				continue;
+			}
+			$mdate = new \DateTime($library->getProperty('LastItemModifiedDate'));
 			$rows[] = [
-				'title' => $library->getProperties()['Title'],
-				'items' => $library->getProperties()['ItemCount'],
+				'title' => $library->getProperty('Title'),
+				'items' => $library->getProperty('ItemCount'),
 				'mdate' => date('Y-m-d H:i', $mdate->getTimestamp()),
 			];
 		}
@@ -114,13 +224,12 @@ class ListLibraries extends Command {
 
 		/** @var SPList $library */
 		foreach ($libraries as $library) {
-			$props = $library->getProperties();
 			$rows[$i] = [];
 
-			$rows[$i]['Title'] = $props['Title'];
-			unset($props['Title']);
-			foreach ($props as $k => $v) {
-				$rows[$i][$k] = (is_object($v) || is_array($v)) ? '{object}' : $v;
+			$rows[$i]['Title'] = $library->getProperty('Title');
+			foreach (self::ALL_PROPERTIES as $propertyName) {
+				$v = $library->getProperty($propertyName);
+				$rows[$i][$propertyName] = (is_object($v) || is_array($v)) ? '{object}' : $v;
 			}
 			$i++;
 		}
