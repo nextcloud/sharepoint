@@ -23,15 +23,7 @@
 
 namespace OCA\SharePoint;
 
-use OCA\SharePoint\Helper\RequestsWrapper;
-
 class ClientFactory {
-	/** @var RequestsWrapper */
-	private $requestsWrapper;
-
-	public function __construct(RequestsWrapper  $requestsWrapper) {
-		$this->requestsWrapper = $requestsWrapper;
-	}
 
 	public function getClient(
 		ContextsFactory $contextsFactory,
@@ -41,7 +33,6 @@ class ClientFactory {
 	): Client {
 		return new Client(
 			$contextsFactory,
-			$this->requestsWrapper,
 			$sharePointUrl,
 			$credentials,
 			$options
