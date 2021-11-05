@@ -1,7 +1,6 @@
 {
 	"require": {
-		"vgrem/php-spo": "^2.4",
-		"cweagans/composer-patches": "^1.7"
+		"vgrem/php-spo": "2.4.*"
 	},
 	"scripts": {
 		"cs:check": "php-cs-fixer fix --dry-run --diff",
@@ -10,12 +9,5 @@
 	},
 	"require-dev": {
 		"nextcloud/coding-standard": "^0.5.0"
-	},
-	"extra": {
-    "patches": {
-      "vgrem/php-spo": {
-        "Lowercase the Accept header value": "https://github.com/blizzz/phpSPO/commit/6025be531c764ec0d4d0545fc0293b6f91d72726.patch"
-      }
-    }
-  }
+	}
 }
