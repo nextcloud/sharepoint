@@ -24,19 +24,20 @@
 namespace OCA\SharePoint;
 
 use Exception;
+use OCP\ILogger;
 use Office365\Runtime\ClientObject;
 use Office365\Runtime\ClientObjectCollection;
 use Office365\Runtime\Http\RequestOptions;
-use Office365\Runtime\Http\Requests;
+use Office365\Runtime\Http\Response;
 use Office365\SharePoint\BasePermissions;
 use Office365\SharePoint\ClientContext;
+use Office365\SharePoint\Field;
 use Office365\SharePoint\File;
 use Office365\SharePoint\FileCreationInformation;
 use Office365\SharePoint\Folder;
 use Office365\SharePoint\SPList;
 use function explode;
 use function json_decode;
-use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\Storage\Storage;
 
 class Client {
@@ -63,12 +64,11 @@ class Client {
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
 
-	/** @var RequestsWrapper */
-	private $requestsWrapper;
+	/** @var array */
+	protected $lastResponse;
 
 	public function __construct(
 		ContextsFactory $contextsFactory,
-		RequestsWrapper $requestsWrapper,
 		string $sharePointUrl,
 		array $credentials,
 		array $options
@@ -77,7 +77,6 @@ class Client {
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
 		$this->options = $options;
-		$this->requestsWrapper = $requestsWrapper;
 	}
 
 	/**
@@ -126,19 +125,14 @@ class Client {
 		if ($trace['function'] === 'validateResponse' && isset($trace['args'][0])) {
 			$responseCodeJson = json_decode($trace['args'][0], true)['error'];
 		} else {
-			$lastRequest = $this->getLastRequestData();
-			if (!isset($lastRequest['response'])) {
+			if (!isset($this->lastResponse)) {
 				return null;
 			}
 
-			$responseData = $lastRequest['response']
-				? json_decode($lastRequest['response'], true)
-				: [];
-
-			if (!isset($responseData['error'])) {
+			if (!isset($this->lastResponse['error'])) {
 				return null;
 			}
-			$responseCodeJson = $responseData['error'];
+			$responseCodeJson = $this->lastResponse['error'];
 		}
 
 		return (int)explode(',', $responseCodeJson['code'])[0];
@@ -309,11 +303,6 @@ class Client {
 		$this->context->executeQuery();
 	}
 
-	private function getLastRequestData(): array {
-		$requestHistory = $this->requestsWrapper->getHistory();
-		return array_pop($requestHistory);
-	}
-
 	/**
 	 * deletes a provided File or Folder
 	 *
@@ -379,7 +368,7 @@ class Client {
 	public function isHidden(ClientObject $file) {
 		// ClientObject itself does not have getListItemAllFields but is
 		// the common denominator of File and Folder
-		if (!$file instanceof File && !$file instanceof Folder) {
+		if (!$file instanceof File && !$file instanceof Folder && !$file instanceof Field)  {
 			throw new \InvalidArgumentException('File or Folder expected');
 		}
 		if ($file instanceof File) {
@@ -456,6 +445,10 @@ class Client {
 	 */
 	public function loadAndExecute(ClientObject $object, array $properties = null) {
 		$this->context->load($object, $properties);
+		$r = $this->context->getPendingRequest();
+		$r->afterExecuteRequest(function (Response $response) {
+			$this->lastResponse = $response->getContent();
+		});
 		$this->context->executeQuery();
 	}
 
@@ -490,9 +483,7 @@ class Client {
 				]
 			);
 			// fall back to NTLM
-			$authContext = $this->contextsFactory->getCredentialsAuthContext($this->credentials['user'], $this->credentials['password']);
-			$authContext->AuthType = CURLAUTH_NTLM;
-			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $authContext);
+			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->credentials['user'], $this->credentials['password'], true);
 			// Auth is not triggered yet with NTLM. This will happen when
 			// something is requested from SharePoint (on demand)
 		}
