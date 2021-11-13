@@ -1,4 +1,5 @@
 { "translations": {
+    "Enforce NTLM auth" : "Pakota NTLM-todennus",
     "SharePoint" : "SharePoint",
     "Host" : "Isäntä",
     "Document Library" : "Dokumenttikirjasto",
