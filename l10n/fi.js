@@ -1,6 +1,7 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Enforce NTLM auth" : "Pakota NTLM-todennus",
     "SharePoint" : "SharePoint",
     "Host" : "Isäntä",
     "Document Library" : "Dokumenttikirjasto",
