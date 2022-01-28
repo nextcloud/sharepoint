@@ -368,7 +368,7 @@ class Client {
 	public function isHidden(ClientObject $file) {
 		// ClientObject itself does not have getListItemAllFields but is
 		// the common denominator of File and Folder
-		if (!$file instanceof File && !$file instanceof Folder && !$file instanceof Field)  {
+		if (!$file instanceof File && !$file instanceof Folder && !$file instanceof Field) {
 			throw new \InvalidArgumentException('File or Folder expected');
 		}
 		if ($file instanceof File) {

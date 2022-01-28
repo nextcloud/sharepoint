@@ -24,7 +24,6 @@
 namespace OCA\SharePoint;
 
 class ClientFactory {
-
 	public function getClient(
 		ContextsFactory $contextsFactory,
 		string $sharePointUrl,
