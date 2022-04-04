@@ -22,7 +22,7 @@ jobs:
         databases: ['sqlite']
         server-versions: ['master']
 
-    name: php${{ matrix.php-versions }}-${{ matrix.databases }}
+    name: php${{ matrix.php-versions }}-${{ matrix.databases }}-${{ matrix.server-versions }}
 
     steps:
       - name: Checkout server
@@ -47,13 +47,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite, zip, gd
-          tools: phpunit:8.5.13
+          tools: phpunit
+          extensions: mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite
           coverage: none
 
-      - name: Composer
+      - name: Set up PHPUnit
         working-directory: apps/${{ env.APP_NAME }}
-        run: composer install
+        run: composer i
 
       - name: Set up Nextcloud
         env:
@@ -61,13 +61,13 @@ jobs:
         run: |
           mkdir data
           ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass password
-          php -f index.php
           ./occ app:enable files_external
           ./occ app:enable --force ${{ env.APP_NAME }}
+          php -S localhost:8080 &
 
       - name: PHPUnit
         working-directory: apps/${{ env.APP_NAME }}/tests
-        run: phpunit -c phpunit.xml
+        run: ../vendor/bin/phpunit -c phpunit.xml
 
   mysql:
     runs-on: ubuntu-latest
@@ -76,11 +76,11 @@ jobs:
       # do not stop on another job's failure
       fail-fast: false
       matrix:
-        php-versions: ['7.4', '8.0', "8.1"]
+        php-versions: ['7.4', '8.0', '8.1']
         databases: ['mysql']
         server-versions: ['master']
 
-    name: php${{ matrix.php-versions }}-${{ matrix.databases }}
+    name: php${{ matrix.php-versions }}-${{ matrix.databases }}-${{ matrix.server-versions }}
 
     services:
       mysql:
@@ -114,13 +114,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
+          tools: phpunit
           extensions: mbstring, iconv, fileinfo, intl, mysql, pdo_mysql, zip, gd
-          tools: phpunit:8.5.13
           coverage: none
 
-      - name: Composer
+      - name: Set up PHPUnit
         working-directory: apps/${{ env.APP_NAME }}
-        run: composer install
+        run: composer i
 
       - name: Set up Nextcloud
         env:
@@ -128,13 +128,13 @@ jobs:
         run: |
           mkdir data
           ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass password
-          php -f index.php
           ./occ app:enable files_external
           ./occ app:enable --force ${{ env.APP_NAME }}
+          php -S localhost:8080 &
 
       - name: PHPUnit
         working-directory: apps/${{ env.APP_NAME }}/tests
-        run: phpunit -c phpunit.xml
+        run: ../vendor/bin/phpunit -c phpunit.xml
 
   pgsql:
     runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
         databases: ['pgsql']
         server-versions: ['master']
 
-    name: php${{ matrix.php-versions }}-${{ matrix.databases }}
+    name: php${{ matrix.php-versions }}-${{ matrix.databases }}-${{ matrix.server-versions }}
 
     services:
       postgres:
@@ -183,13 +183,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, iconv, fileinfo, intl, pgsql, pdo_pgsql, zip, gd
-          tools: phpunit:8.5.13
+          tools: phpunit
+          extensions: mbstring, iconv, fileinfo, intl, pgsql, pdo_pgsql
           coverage: none
 
-      - name: Composer
+      - name: Set up PHPUnit
         working-directory: apps/${{ env.APP_NAME }}
-        run: composer install
+        run: composer i
 
       - name: Set up Nextcloud
         env:
@@ -197,13 +197,13 @@ jobs:
         run: |
           mkdir data
           ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass password
-          php -f index.php
           ./occ app:enable files_external
           ./occ app:enable --force ${{ env.APP_NAME }}
+          php -S localhost:8080 &
 
       - name: PHPUnit
         working-directory: apps/${{ env.APP_NAME }}/tests
-        run: phpunit -c phpunit.xml
+        run: ../vendor/bin/phpunit -c phpunit.xml
 
   oci:
     runs-on: ubuntu-latest
@@ -216,7 +216,7 @@ jobs:
         databases: ['oci']
         server-versions: ['master']
 
-    name: php${{ matrix.php-versions }}-${{ matrix.databases }}
+    name: php${{ matrix.php-versions }}-${{ matrix.databases }}-${{ matrix.server-versions }}
 
     services:
       oracle:
@@ -247,13 +247,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, iconv, fileinfo, intl, oci8, zip, gd
-          tools: phpunit:8.5.13
+          extensions: mbstring, iconv, fileinfo, intl, oci8
+          tools: phpunit
           coverage: none
 
-      - name: Composer
+      - name: Set up PHPUnit
         working-directory: apps/${{ env.APP_NAME }}
-        run: composer install
+        run: composer i
 
       - name: Set up Nextcloud
         run: |
@@ -265,4 +265,4 @@ jobs:
 
       - name: PHPUnit
         working-directory: apps/${{ env.APP_NAME }}/tests
-        run: phpunit -c phpunit.xml
+        run: ../vendor/bin/phpunit -c phpunit.xml
