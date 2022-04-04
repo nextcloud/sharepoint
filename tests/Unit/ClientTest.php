@@ -24,7 +24,7 @@
 namespace OCA\SharePoint\Tests\Unit;
 
 use Exception;
-use OCA\SharePoin\Helper\RequestsWrapper;
+use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\NotFoundException;
