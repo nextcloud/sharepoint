@@ -24,7 +24,6 @@
 namespace OCA\SharePoint;
 
 use Exception;
-use OCP\ILogger;
 use Office365\Runtime\ClientObject;
 use Office365\Runtime\ClientObjectCollection;
 use Office365\Runtime\Http\RequestOptions;
@@ -36,6 +35,7 @@ use Office365\SharePoint\File;
 use Office365\SharePoint\FileCreationInformation;
 use Office365\SharePoint\Folder;
 use Office365\SharePoint\SPList;
+use Psr\Log\LoggerInterface;
 use function explode;
 use function json_decode;
 use OCA\SharePoint\Storage\Storage;
@@ -125,13 +125,10 @@ class Client {
 		if ($trace['function'] === 'validateResponse' && isset($trace['args'][0])) {
 			$responseCodeJson = json_decode($trace['args'][0], true)['error'];
 		} else {
-			if (!isset($this->lastResponse)) {
+			if (!isset($this->lastResponse) || !isset($this->lastResponse['error'])) {
 				return null;
 			}
 
-			if (!isset($this->lastResponse['error'])) {
-				return null;
-			}
 			$responseCodeJson = $this->lastResponse['error'];
 		}
 
@@ -475,11 +472,13 @@ class Client {
 			}
 			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->credentials['user'], $this->credentials['password']);
 		} catch (Exception $e) {
-			\OC::$server->getLogger()->logException($e,
+			/** @var LoggerInterface $logger */
+			$logger = \OC::$server->get(LoggerInterface::class); // FIXME: DI
+			$logger->debug(
+				'Failed to acquire token for user, fall back to NTLM auth',
 				[
-					'message' => 'Failed to acquire token for user, fall back to NTLM auth',
 					'app' => 'sharepoint',
-					'level' => ILogger::DEBUG
+					'exception' => $e,
 				]
 			);
 			// fall back to NTLM
