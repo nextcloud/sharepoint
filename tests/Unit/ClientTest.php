@@ -24,7 +24,6 @@
 namespace OCA\SharePoint\Tests\Unit;
 
 use Exception;
-use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\NotFoundException;
@@ -47,20 +46,16 @@ class SharePointClientTest extends TestCase {
 
 	/** @var  Client */
 	protected $client;
-	/** @var RequestsWrapper|\PHPUnit\Framework\MockObject\MockObject */
-	protected $requestWrapper;
 
 	protected function setUp(): void {
 		parent::setUp();
 
 		$this->contextsFactory = $this->createMock(ContextsFactory::class);
-		$this->requestWrapper = $this->createMock(RequestsWrapper::class);
 		$credentials = ['user' => 'foobar', 'password' => 'barfoo'];
 		$this->documentLibraryTitle = 'Our Docs';
 
 		$this->client = new Client(
 			$this->contextsFactory,
-			$this->requestWrapper,
 			'my.sp.server',
 			$credentials,
 			[]
