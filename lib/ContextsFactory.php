@@ -24,32 +24,42 @@
 
 namespace OCA\SharePoint;
 
-use Office365\PHP\Client\Runtime\Auth\AuthenticationContext;
-use Office365\PHP\Client\Runtime\Auth\IAuthenticationContext;
-use Office365\PHP\Client\Runtime\Auth\NetworkCredentialContext;
-use Office365\PHP\Client\SharePoint\ClientContext;
+use Office365\Runtime\Auth\UserCredentials;
+use Office365\SharePoint\ClientContext;
 
 class ContextsFactory {
 
 	/**
-	 * @param string $user
-	 * @param string $password
-	 * @return NetworkCredentialContext
+	 * @throws \Exception
 	 */
-	public function getCredentialsAuthContext(string $user, string $password): NetworkCredentialContext {
-		return new NetworkCredentialContext($user, $password);
-	}
-
-	public function getTokenAuthContext(string $url): AuthenticationContext {
-		return new AuthenticationContext($url);
+	public function getClientContext(
+		string $url,
+		string $user,
+		string $password,
+		bool $useNtlm = false
+	): ClientContext {
+		$clientContext = new ClientContext($url);
+		$credentials = new UserCredentials($user, $password);
+		if ($useNtlm) {
+			return $this->getWithNtlm($clientContext, $credentials);
+		}
+		return $this->withCredentials($clientContext, $credentials);
 	}
 
 	/**
-	 * @param string $server
-	 * @param IAuthenticationContext $authContext
-	 * @return ClientContext
+	 * @throws \Exception
 	 */
-	public function getClientContext($server, IAuthenticationContext $authContext) {
-		return new ClientContext($server, $authContext);
+	protected function withCredentials(
+		ClientContext $clientContext,
+		UserCredentials $userCredentials
+	): ClientContext {
+		return $clientContext->withCredentials($userCredentials);
+	}
+
+	protected function getWithNtlm(
+		ClientContext $clientContext,
+		UserCredentials $userCredentials
+	) {
+		return $clientContext->withNtlm($userCredentials);
 	}
 }
