@@ -24,11 +24,11 @@
 namespace OCA\SharePoint\Tests\Unit;
 
 use Exception;
-use OCA\SharePoin\Helper\RequestsWrapper;
-use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
+use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\NotFoundException;
 use Office365\Runtime\ClientObject;
+use Office365\Runtime\OData\ODataRequest;
 use Office365\SharePoint\ClientContext;
 use Office365\SharePoint\File;
 use Office365\SharePoint\FileCollection;
@@ -47,20 +47,16 @@ class SharePointClientTest extends TestCase {
 
 	/** @var  Client */
 	protected $client;
-	/** @var RequestsWrapper|\PHPUnit\Framework\MockObject\MockObject */
-	protected $requestWrapper;
 
 	protected function setUp(): void {
 		parent::setUp();
 
 		$this->contextsFactory = $this->createMock(ContextsFactory::class);
-		$this->requestWrapper = $this->createMock(RequestsWrapper::class);
 		$credentials = ['user' => 'foobar', 'password' => 'barfoo'];
 		$this->documentLibraryTitle = 'Our Docs';
 
 		$this->client = new Client(
 			$this->contextsFactory,
-			$this->requestWrapper,
 			'my.sp.server',
 			$credentials,
 			[]
@@ -88,6 +84,9 @@ class SharePointClientTest extends TestCase {
 			->with($fileMock, $properties);
 		$clientContextMock->expects($this->once())
 			->method('executeQuery');
+		$clientContextMock->expects($this->any())
+			->method('getPendingRequest')
+			->willReturn($this->createMock(ODataRequest::class));
 
 		$this->contextsFactory->expects($this->once())
 			->method('getClientContext')
@@ -128,6 +127,9 @@ class SharePointClientTest extends TestCase {
 		$this->contextsFactory->expects($this->atLeastOnce())
 			->method('getClientContext')
 			->willReturn($clientContextMock);
+		$clientContextMock->expects($this->any())
+			->method('getPendingRequest')
+			->willReturn($this->createMock(ODataRequest::class));
 
 		$folderObject = $this->client->fetchFileOrFolder($path, $properties);
 		$this->assertSame($folderMock, $folderObject);
@@ -139,23 +141,6 @@ class SharePointClientTest extends TestCase {
 	public function testFetchNotExistingByFileOrFolder() {
 		$path = '/' . $this->documentLibraryTitle . '/Our Directory/not-here.pdf';
 		$properties = ['Length', 'TimeLastModified'];
-
-		$this->requestWrapper->expects($this->once())
-			->method('getHistory')
-			->willReturn([
-				[
-					'request' => [],
-					'response' => '{
-						"error": {
-							"code": "-1, Microsoft.SharePoint.SPException",
-							"message": {
-								"lang": "en-US",
-								"value": "Unknown error"
-							}
-						}
-					}',
-				]
-			]);
 
 		$fileMock = $this->createMock(File::class);
 
@@ -190,9 +175,29 @@ class SharePointClientTest extends TestCase {
 				if ($cnt === 1) {
 					throw new Exception('The file ' . $path . ' does not exist.');
 				} elseif ($cnt === 2) {
-					throw new Exception('Unknown Error');
+					$e = new \Exception('Unknown Error');
+					$reflected = new \ReflectionObject($e);
+					$reflectedTrace = $reflected->getProperty('trace');
+					$reflectedTrace->setAccessible(true);
+					$reflectedTrace->setValue($e, [
+						[
+							'function' => 'validateResponse',
+							'args' => [
+								\json_encode([
+									'error' => [
+										'code' => '-1,opaque'
+									]
+								])
+							]
+						]
+					]);
+					$reflectedTrace->setAccessible(false);
+					throw $e;
 				}
 			});
+		$clientContextMock->expects($this->any())
+			->method('getPendingRequest')
+			->willReturn($this->createMock(ODataRequest::class));
 
 		$this->contextsFactory->expects($this->exactly(1))
 			->method('getClientContext')
@@ -345,13 +350,15 @@ class SharePointClientTest extends TestCase {
 		$clientContextMock->expects($this->once())
 			->method('getWeb')
 			->willReturn($webMock);
+		$clientContextMock->expects($this->atLeast(2))
+			->method('executeQuery');
+		$clientContextMock->expects($this->any())
+			->method('getPendingRequest')
+			->willReturn($this->createMock(ODataRequest::class));
 
 		$this->contextsFactory->expects($this->once())
 			->method('getClientContext')
 			->willReturn($clientContextMock);
-
-		$clientContextMock->expects($this->atLeast(2))
-			->method('executeQuery');
 
 		$this->client->rename($path, $newPath);
 	}
@@ -387,9 +394,9 @@ class SharePointClientTest extends TestCase {
 
 	public function authOptionsProvider(): array {
 		return [
-			#0: NTLM not enforced, auth token successful
+			#0: NTLM not enforced, with Exception (i.e. NTLM fallback)
 			[ false, true ],
-			#1: NTLM not enforced, auth token not successful
+			#1: NTLM not enforced, without Exception
 			[ false, false ],
 			#1: NTLM enforced
 			[ true ]
@@ -399,35 +406,23 @@ class SharePointClientTest extends TestCase {
 	/**
 	 * @dataProvider authOptionsProvider
 	 */
-	public function testConnectionNtlmHandling(bool $forceNtlm, bool $tokenAuthSuccess = false): void {
+	public function testConnectionNtlmHandling(bool $forceNtlm, bool $throwsException = false): void {
 		$credentials = ['user' => 'foobar', 'password' => 'barfoo'];
 
-		if ($forceNtlm) {
-			$this->contextsFactory->expects($this->never())
-				->method('getTokenAuthContext');
-		} else {
-			$tokenAuthContext = $this->createMock(AuthenticationContext::class);
-			$tokenAuthContext->expects($this->once())
-				->method('acquireTokenForUser')
-				->with($credentials['user'], $credentials['password'])
-				->willReturnCallback(function (string $user, string $pwd) use ($tokenAuthSuccess) {
-					if ($tokenAuthSuccess) {
-						return;
-					}
-					throw new \Exception('You shall not token auth here');
-				});
+		$clientContext = $this->createMock(ClientContext::class);
 
-			$this->contextsFactory->expects($this->once())
-				->method('getTokenAuthContext')
-				->willReturn($tokenAuthContext);
-		}
-
-		$this->contextsFactory->expects($this->once())
-			->method('getClientContext');
+		$this->contextsFactory->expects($this->exactly($throwsException ? 2 : 1))
+			->method('getClientContext')
+			->with('my.sp.server', $credentials['user'], $credentials['password'], $this->anything())
+			->willReturnCallback(function (string $url, string $user, string $pwd, $useNtlm) use ($throwsException, $clientContext): ClientContext {
+				if ($throwsException && !$useNtlm) {
+					throw new \Exception('Expected exceptiopn');
+				}
+				return $clientContext;
+			});
 
 		$client = new Client(
 			$this->contextsFactory,
-			$this->requestWrapper,
 			'my.sp.server',
 			$credentials,
 			[ 'forceNtlm' => $forceNtlm ]
