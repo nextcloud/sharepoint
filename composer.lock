@@ -4,79 +4,42 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f3a25b3516c6170afcf6101e01bded71",
+    "content-hash": "5720f7c910616d16f37fbebfdf48da00",
     "packages": [
         {
-            "name": "cweagans/composer-patches",
-            "version": "1.7.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cweagans/composer-patches.git",
-                "reference": "ae02121445ad75f4eaff800cc532b5e6233e2ddf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cweagans/composer-patches/zipball/ae02121445ad75f4eaff800cc532b5e6233e2ddf",
-                "reference": "ae02121445ad75f4eaff800cc532b5e6233e2ddf",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.0 || ^2.0",
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "composer/composer": "~1.0 || ~2.0",
-                "phpunit/phpunit": "~4.6"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "cweagans\\Composer\\Patches"
-            },
-            "autoload": {
-                "psr-4": {
-                    "cweagans\\Composer\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Cameron Eagans",
-                    "email": "me@cweagans.net"
-                }
-            ],
-            "description": "Provides a way to patch Composer packages.",
-            "time": "2020-09-30T17:56:20+00:00"
-        },
-        {
             "name": "vgrem/php-spo",
-            "version": "v2.2.5",
+            "version": "v2.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/vgrem/phpSPO.git",
-                "reference": "c8444fa2922ece7acf64d4c888fec17713e32073"
+                "reference": "a7c965d52071136156848ed506a1a42b05bd3e9b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vgrem/phpSPO/zipball/c8444fa2922ece7acf64d4c888fec17713e32073",
-                "reference": "c8444fa2922ece7acf64d4c888fec17713e32073",
+                "url": "https://api.github.com/repos/vgrem/phpSPO/zipball/a7c965d52071136156848ed506a1a42b05bd3e9b",
+                "reference": "a7c965d52071136156848ed506a1a42b05bd3e9b",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "php": ">=5.4"
+                "ext-dom": "*",
+                "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5"
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Office365\\PHP\\Client\\": "src/"
+                    "Office365\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "LGPL-3.0+"
+                "MIT"
             ],
             "authors": [
                 {
@@ -84,15 +47,19 @@
                     "email": "vvgrem@gmail.com"
                 }
             ],
-            "description": "The library provides a Office 365 REST client for PHP. It allows to performs CRUD operations against Office 365 resources via an REST/OData based API",
+            "description": "Office 365 library for PHP. It allows to performs CRUD operations against Office 365 resources via an REST/OData based API",
             "keywords": [
                 "Office365",
                 "api",
                 "curl",
-                "rest",
-                "sharepoint"
+                "microsoftgraph",
+                "rest"
             ],
-            "time": "2019-09-19T17:34:30+00:00"
+            "support": {
+                "issues": "https://github.com/vgrem/phpSPO/issues",
+                "source": "https://github.com/vgrem/phpSPO/tree/v2.4.5"
+            },
+            "time": "2021-05-06T08:20:21+00:00"
         }
     ],
     "packages-dev": [
@@ -2088,5 +2055,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }

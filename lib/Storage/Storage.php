@@ -30,15 +30,14 @@ use OC\Files\Storage\Common;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
 use OCA\SharePoint\ContextsFactory;
-use OCA\SharePoint\Helper\RequestsWrapper;
 use OCA\SharePoint\NotFoundException;
 use OCP\Files\FileInfo;
 use OCP\ILogger;
 use OCP\ITempManager;
-use Office365\PHP\Client\Runtime\ClientObject;
-use Office365\PHP\Client\Runtime\ClientObjectCollection;
-use Office365\PHP\Client\SharePoint\File;
-use Office365\PHP\Client\SharePoint\Folder;
+use Office365\Runtime\ClientObject;
+use Office365\Runtime\ClientObjectCollection;
+use Office365\SharePoint\File;
+use Office365\SharePoint\Folder;
 
 class Storage extends Common {
 	public const SP_PROPERTY_SIZE = 'Length';
@@ -557,7 +556,7 @@ class Storage extends Common {
 			&& $parameters['sharePointClientFactory'] instanceof ClientFactory) {
 			$spcFactory = $parameters['sharePointClientFactory'];
 		} else {
-			$spcFactory = new ClientFactory(new RequestsWrapper());
+			$spcFactory = new ClientFactory();
 		}
 		$this->spClient = $spcFactory->getClient(
 			$this->contextsFactory,
