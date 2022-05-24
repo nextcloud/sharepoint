@@ -6,4 +6,4 @@ OC.L10N.register(
     "Document Library" : "Biblioteca de Documentos",
     "SharePoint Backend" : "Sistema de soporte de SharePoint"
 },
-"nplurals=2; plural=(n != 1);");
+"nplurals=2; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");
