@@ -30,6 +30,8 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use Office365\Runtime\Auth\AuthenticationContext;
+use Office365\Runtime\Auth\SamlTokenProvider;
 
 class Application extends App implements IBootstrap {
 	public function __construct() {
@@ -37,6 +39,8 @@ class Application extends App implements IBootstrap {
 	}
 
 	public function register(IRegistrationContext $context): void {
+		$context->registerSensitiveMethods(SamlTokenProvider::class, ['acquireSecurityToken']);
+		$context->registerSensitiveMethods(AuthenticationContext::class, ['acquireToken', 'acquireTokenForUser']);
 		$context->registerEventListener('OCA\\Files_External::loadAdditionalBackends', ExternalStoragesRegistrationListener::class);
 	}
 
