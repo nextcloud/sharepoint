@@ -53,6 +53,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite
+          ini-values: zend.exception_ignore_args=Off
           coverage: none
 
       - name: Install app dependencies
