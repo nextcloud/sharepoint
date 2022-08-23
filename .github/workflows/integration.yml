@@ -1,0 +1,79 @@
+name: Integration
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/integration.yml'
+      - 'appinfo/**'
+      - 'lib/**'
+      - 'tests/**'
+
+  push:
+    branches:
+      - master
+      - stable*
+
+env:
+  APP_NAME: sharepoint
+
+jobs:
+  sqlite:
+    runs-on: ubuntu-latest
+
+    strategy:
+      # do not stop on another job's failure
+      fail-fast: false
+      matrix:
+        php-versions: ['7.4', '8.0', '8.1']
+        databases: ['sqlite']
+        server-versions: ['master']
+
+    name: integration-php${{ matrix.php-versions }}-${{ matrix.databases }}
+
+    steps:
+      - name: Checkout server
+        uses: actions/checkout@v2
+        with:
+          repository: nextcloud/server
+          ref: ${{ matrix.server-versions }}
+
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+      - name: Checkout app
+        uses: actions/checkout@v2
+        with:
+          path: apps/${{ env.APP_NAME }}
+
+      - name: Set up php ${{ matrix.php-versions }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite
+          ini-values: zend.exception_ignore_args=Off
+          coverage: none
+
+      - name: Install app dependencies
+        working-directory: apps/${{ env.APP_NAME }}
+        run: composer i
+
+      - name: Install test dependencies
+        working-directory: apps/${{ env.APP_NAME }}/tests/Integration
+        run: composer i
+
+      - name: Set up Nextcloud
+        env:
+          DB_PORT: 4444
+        run: |
+          mkdir data
+          ./occ maintenance:install --verbose --database=${{ matrix.databases }} --database-name=nextcloud --database-host=127.0.0.1 --database-port=$DB_PORT --database-user=root --database-pass=rootpassword --admin-user admin --admin-pass admin
+          php -f index.php
+          ./occ app:enable files_external
+          ./occ app:enable --force ${{ env.APP_NAME }}
+          php -S localhost:8080 &
+      - name: Integration
+        working-directory: apps/${{ env.APP_NAME }}/tests/Integration
+        run: bash run.sh
