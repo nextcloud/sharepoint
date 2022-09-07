@@ -1,6 +1,6 @@
 OC.L10N.register(
     "sharepoint",
     {
-    "Document Library" : "Hujjatlar Kutubxonasi"
+    "Document Library" : "Document Library"
 },
 "nplurals=1; plural=0;");
