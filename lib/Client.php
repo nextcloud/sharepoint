@@ -424,6 +424,8 @@ class Client {
 	}
 
 	public function getDocumentLibrary(string $documentLibrary): SPList {
+		// we can make it static as there is one client per storage
+		// thus 1:1 Client<->DocumentLibrary relation
 		static $list = null;
 		if ($list instanceof SPList) {
 			return $list;
@@ -434,12 +436,19 @@ class Client {
 		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
 		$this->loadAndExecute($lists);
 		if ($lists instanceof SPList) {
-			$list = $lists;
-			$rFolder = $list->getRootFolder();
-			$this->loadAndExecute($rFolder);
-			return $list;
+			return $lists;
 		}
 		throw new NotFoundException('List not found');
+	}
+
+	public function getDocumentLibrariesRootFolder(string $documentLibrary): Folder {
+		static $rootFolder = null;
+		if (!$rootFolder instanceof Folder) {
+			$library = $this->getDocumentLibrary($documentLibrary);
+			$rootFolder = $library->getRootFolder();
+			$this->loadAndExecute($rootFolder);
+		}
+		return $rootFolder;
 	}
 
 	/**

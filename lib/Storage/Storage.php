@@ -539,7 +539,7 @@ class Storage extends Common {
 	}
 
 	/**
-	 * work around dependency injection issues so we can test this class properly
+	 * work around dependency injection issues, so we can test this class properly
 	 *
 	 * @param array $parameters
 	 */
@@ -555,7 +555,7 @@ class Storage extends Common {
 			&& $parameters['sharePointClientFactory'] instanceof ClientFactory) {
 			$spcFactory = $parameters['sharePointClientFactory'];
 		} else {
-			$spcFactory = new ClientFactory();
+			$spcFactory = \OC::$server->get(ClientFactory::class);
 		}
 		$this->spClient = $spcFactory->getClient(
 			$this->contextsFactory,
@@ -574,7 +574,7 @@ class Storage extends Common {
 		if (isset($parameters['tempManager'])) {
 			$this->tempManager = $parameters['tempManager'];
 		} else {
-			$this->tempManager = \OC::$server->getTempManager();
+			$this->tempManager = \OC::$server->get(ITempManager::class);
 		}
 	}
 
@@ -695,8 +695,8 @@ class Storage extends Common {
 	 */
 	private function formatPath($path) {
 		$path = trim($path, '/');
-		$docLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
-		$serverUrl = $docLib->getRootFolder()->getProperty(self::SP_PROPERTY_URL);
+		$rootFolder = $this->spClient->getDocumentLibrariesRootFolder($this->documentLibrary);
+		$serverUrl = $rootFolder->getProperty(self::SP_PROPERTY_URL);
 		if ($path !== '') {
 			$serverUrl .= '/' . $path;
 		}
