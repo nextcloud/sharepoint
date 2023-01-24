@@ -36,17 +36,16 @@ use Office365\SharePoint\Folder;
 use Office365\SharePoint\FolderCollection;
 use Office365\SharePoint\ListItem;
 use Office365\SharePoint\Web;
+use Psr\Log\LoggerInterface;
 use Test\TestCase;
 
 class SharePointClientTest extends TestCase {
 	/** @var  ContextsFactory|\PHPUnit_Framework_MockObject_MockObject */
 	protected $contextsFactory;
 
-	/** @var  string */
-	protected $documentLibraryTitle;
+	protected string $documentLibraryTitle;
 
-	/** @var  Client */
-	protected $client;
+	protected Client $client;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -57,6 +56,7 @@ class SharePointClientTest extends TestCase {
 
 		$this->client = new Client(
 			$this->contextsFactory,
+			$this->createMock(LoggerInterface::class),
 			'my.sp.server',
 			$credentials,
 			[]
@@ -423,6 +423,7 @@ class SharePointClientTest extends TestCase {
 
 		$client = new Client(
 			$this->contextsFactory,
+			$this->createMock(LoggerInterface::class),
 			'my.sp.server',
 			$credentials,
 			[ 'forceNtlm' => $forceNtlm ]
