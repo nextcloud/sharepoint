@@ -26,6 +26,7 @@ namespace OCA\SharePoint;
 use Exception;
 use Office365\Runtime\ClientObject;
 use Office365\Runtime\ClientObjectCollection;
+use Office365\Runtime\Http\RequestException;
 use Office365\Runtime\Http\RequestOptions;
 use Office365\Runtime\Http\Response;
 use Office365\SharePoint\BasePermissions;
@@ -66,9 +67,11 @@ class Client {
 
 	/** @var array */
 	protected $lastResponse;
+	private LoggerInterface $logger;
 
 	public function __construct(
 		ContextsFactory $contextsFactory,
+		LoggerInterface $logger,
 		string $sharePointUrl,
 		array $credentials,
 		array $options
@@ -77,6 +80,7 @@ class Client {
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
 		$this->options = $options;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -204,13 +208,17 @@ class Client {
 			throw new \InvalidArgumentException('file resource expected');
 		}
 		$this->ensureConnection();
-		$relativeServerPath = rawurlencode($relativeServerPath);
-		$url = $this->context->getServiceRootUrl() .
-			"web/getfilebyserverrelativeurl('$relativeServerPath')/\$value";
-		$options = new RequestOptions($url);
-		$options->StreamHandle = $fp;
-
-		return $this->context->executeQueryDirect($options);
+		try {
+			$file = $this->fetchFile($relativeServerPath);
+			$file->download($fp)->executeQuery();
+		} catch (RequestException $e) {
+			$this->logger->error('Error while downloading file from Sharepoint', [
+				'app' => 'sharepoint',
+				'exception' => $e,
+			]);
+			return false;
+		}
+		return true;
 	}
 
 	/**
