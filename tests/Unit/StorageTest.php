@@ -38,7 +38,6 @@ use Office365\SharePoint\SPList;
 use Test\TestCase;
 
 class StorageTest extends TestCase {
-
 	/** @var  Storage */
 	protected $storage;
 
