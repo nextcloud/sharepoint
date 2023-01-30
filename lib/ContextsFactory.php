@@ -28,7 +28,6 @@ use Office365\Runtime\Auth\UserCredentials;
 use Office365\SharePoint\ClientContext;
 
 class ContextsFactory {
-
 	/**
 	 * @throws \Exception
 	 */

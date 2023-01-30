@@ -440,7 +440,6 @@ class Storage extends Common {
 				return CallbackWrapper::wrap($fp, null, null, function () use ($path, $tmpFile) {
 					$this->writeBack($tmpFile, $path);
 				});
-
 		}
 		return false;
 	}

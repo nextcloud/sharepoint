@@ -36,7 +36,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
 class ListLibraries extends Base {
-
 	/** @var ClientFactory */
 	protected $clientFactory;
 	/** @var ContextsFactory */
