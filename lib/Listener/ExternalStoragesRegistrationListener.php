@@ -31,7 +31,6 @@ use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 
 class ExternalStoragesRegistrationListener implements IEventListener {
-
 	/** @var BackendService */
 	private $backendService;
 	/** @var BackendProvider */
