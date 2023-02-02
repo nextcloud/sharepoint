@@ -68,6 +68,9 @@ class Client {
 	/** @var array */
 	protected $lastResponse;
 	private LoggerInterface $logger;
+	// as there is one client per storage it is a 1:1 Client<->DocumentLibrary relation (lazy-loading)
+	private ?SPList $documentLibrary;
+	private ?Folder $documentLibraryRootFolder;
 
 	public function __construct(
 		ContextsFactory $contextsFactory,
@@ -423,32 +426,32 @@ class Client {
 		return $lists->getData();
 	}
 
+	/**
+	 * @throws NotFoundException
+	 */
 	public function getDocumentLibrary(string $documentLibrary): SPList {
-		// we can make it static as there is one client per storage
-		// thus 1:1 Client<->DocumentLibrary relation
-		static $list = null;
-		if ($list instanceof SPList) {
-			return $list;
+		if ($this->documentLibrary === null) {
+			$this->ensureConnection();
+			$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
+			$lists = $this->context->getWeb()->getLists()->getByTitle($title);
+			$this->loadAndExecute($lists);
+			if ($lists instanceof SPList) {
+				$this->documentLibrary = $lists;
+			}
 		}
-
-		$this->ensureConnection();
-		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
-		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
-		$this->loadAndExecute($lists);
-		if ($lists instanceof SPList) {
-			return $lists;
+		if ($this->documentLibrary instanceof SPList) {
+			return $this->documentLibrary;
 		}
 		throw new NotFoundException('List not found');
 	}
 
 	public function getDocumentLibrariesRootFolder(string $documentLibrary): Folder {
-		static $rootFolder = null;
-		if (!$rootFolder instanceof Folder) {
+		if ($this->documentLibraryRootFolder === null) {
 			$library = $this->getDocumentLibrary($documentLibrary);
-			$rootFolder = $library->getRootFolder();
-			$this->loadAndExecute($rootFolder);
+			$this->documentLibraryRootFolder = $library->getRootFolder();
+			$this->loadAndExecute($this->documentLibraryRootFolder);
 		}
-		return $rootFolder;
+		return $this->documentLibraryRootFolder;
 	}
 
 	/**
