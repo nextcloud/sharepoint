@@ -225,10 +225,10 @@ class Client {
 		$url = $this->context->getServiceRootUrl() . "web/getfilebyserverrelativeurl('$serverRelativeUrl')/\$value";
 		$request = new RequestOptions($url);
 		$request->Method = 'POST'; // yes, POST
-		$request->addCustomHeader('X-HTTP-Method', 'PUT'); // yes, PUT
+		$request->ensureHeader('X-HTTP-Method', 'PUT'); // yes, PUT
 		$this->context->ensureFormDigest($request);
 		$request->StreamHandle = $fp;
-		$request->addCustomHeader("Content-Length", filesize($localPath));
+		$request->ensureHeader("Content-Length", filesize($localPath));
 
 		return false !== $this->context->executeQueryDirect($request);
 	}
