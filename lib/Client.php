@@ -35,6 +35,7 @@ use Office365\SharePoint\Field;
 use Office365\SharePoint\File;
 use Office365\SharePoint\FileCreationInformation;
 use Office365\SharePoint\Folder;
+use Office365\SharePoint\Internal\Paths\FileContentPath;
 use Office365\SharePoint\SPList;
 use Psr\Log\LoggerInterface;
 use function explode;
@@ -69,8 +70,8 @@ class Client {
 	protected $lastResponse;
 	private LoggerInterface $logger;
 	// as there is one client per storage it is a 1:1 Client<->DocumentLibrary relation (lazy-loading)
-	private ?SPList $documentLibrary;
-	private ?Folder $documentLibraryRootFolder;
+	private ?SPList $documentLibrary = null;
+	private ?Folder $documentLibraryRootFolder = null;
 
 	public function __construct(
 		ContextsFactory $contextsFactory,
@@ -157,7 +158,7 @@ class Client {
 	 * @param array|null $properties
 	 * @return File
 	 */
-	public function fetchFile($relativeServerPath, array $properties = null) {
+	public function fetchFile($relativeServerPath, array $properties = null): File {
 		$this->ensureConnection();
 		$file = $this->context->getWeb()->getFileByServerRelativeUrl($relativeServerPath);
 		$this->loadAndExecute($file, $properties);
@@ -228,12 +229,15 @@ class Client {
 	 * @param string $relativeServerPath
 	 * @param resource $fp
 	 * @param string $localPath - we need to pass the file size for the content length header
-	 * @return bool
-	 * @throws Exception
+	 * @return void
+	 * @throws RequestException
 	 */
-	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath) {
-		$serverRelativeUrl = rawurlencode($relativeServerPath);
-		$url = $this->context->getServiceRootUrl() . "web/getfilebyserverrelativeurl('$serverRelativeUrl')/\$value";
+	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath): void {
+		// inspired by File::saveBinary()
+		$file = $this->fetchFile($relativeServerPath);
+		$contentPath = new FileContentPath($file->getResourcePath());
+		$url = $this->context->getServiceRootUrl() . $contentPath->toUrl();
+
 		$request = new RequestOptions($url);
 		$request->Method = 'POST'; // yes, POST
 		$request->ensureHeader('X-HTTP-Method', 'PUT'); // yes, PUT
@@ -241,7 +245,7 @@ class Client {
 		$request->StreamHandle = $fp;
 		$request->ensureHeader("Content-Length", filesize($localPath));
 
-		return false !== $this->context->executeQueryDirect($request);
+		$this->context->executeQueryDirect($request);
 	}
 
 	/**
