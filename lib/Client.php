@@ -26,6 +26,7 @@ namespace OCA\SharePoint;
 use Exception;
 use Office365\Runtime\ClientObject;
 use Office365\Runtime\ClientObjectCollection;
+use Office365\Runtime\Http\RequestException;
 use Office365\Runtime\Http\RequestOptions;
 use Office365\Runtime\Http\Response;
 use Office365\SharePoint\BasePermissions;
@@ -34,6 +35,7 @@ use Office365\SharePoint\Field;
 use Office365\SharePoint\File;
 use Office365\SharePoint\FileCreationInformation;
 use Office365\SharePoint\Folder;
+use Office365\SharePoint\Internal\Paths\FileContentPath;
 use Office365\SharePoint\SPList;
 use Psr\Log\LoggerInterface;
 use function explode;
@@ -66,9 +68,14 @@ class Client {
 
 	/** @var array */
 	protected $lastResponse;
+	private LoggerInterface $logger;
+	// as there is one client per storage it is a 1:1 Client<->DocumentLibrary relation (lazy-loading)
+	private ?SPList $documentLibrary = null;
+	private ?Folder $documentLibraryRootFolder = null;
 
 	public function __construct(
 		ContextsFactory $contextsFactory,
+		LoggerInterface $logger,
 		string $sharePointUrl,
 		array $credentials,
 		array $options
@@ -77,6 +84,7 @@ class Client {
 		$this->sharePointUrl = $sharePointUrl;
 		$this->credentials = $credentials;
 		$this->options = $options;
+		$this->logger = $logger;
 	}
 
 	/**
@@ -150,7 +158,7 @@ class Client {
 	 * @param array|null $properties
 	 * @return File
 	 */
-	public function fetchFile($relativeServerPath, array $properties = null) {
+	public function fetchFile($relativeServerPath, array $properties = null): File {
 		$this->ensureConnection();
 		$file = $this->context->getWeb()->getFileByServerRelativeUrl($relativeServerPath);
 		$this->loadAndExecute($file, $properties);
@@ -204,25 +212,32 @@ class Client {
 			throw new \InvalidArgumentException('file resource expected');
 		}
 		$this->ensureConnection();
-		$relativeServerPath = rawurlencode($relativeServerPath);
-		$url = $this->context->getServiceRootUrl() .
-			"web/getfilebyserverrelativeurl('$relativeServerPath')/\$value";
-		$options = new RequestOptions($url);
-		$options->StreamHandle = $fp;
-
-		return $this->context->executeQueryDirect($options);
+		try {
+			$file = $this->fetchFile($relativeServerPath);
+			$file->download($fp)->executeQuery();
+		} catch (RequestException $e) {
+			$this->logger->error('Error while downloading file from Sharepoint', [
+				'app' => 'sharepoint',
+				'exception' => $e,
+			]);
+			return false;
+		}
+		return true;
 	}
 
 	/**
 	 * @param string $relativeServerPath
 	 * @param resource $fp
 	 * @param string $localPath - we need to pass the file size for the content length header
-	 * @return bool
-	 * @throws Exception
+	 * @return void
+	 * @throws RequestException
 	 */
-	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath) {
-		$serverRelativeUrl = rawurlencode($relativeServerPath);
-		$url = $this->context->getServiceRootUrl() . "web/getfilebyserverrelativeurl('$serverRelativeUrl')/\$value";
+	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath): void {
+		// inspired by File::saveBinary()
+		$file = $this->fetchFile($relativeServerPath);
+		$contentPath = new FileContentPath($file->getResourcePath());
+		$url = $this->context->getServiceRootUrl() . $contentPath->toUrl();
+
 		$request = new RequestOptions($url);
 		$request->Method = 'POST'; // yes, POST
 		$request->ensureHeader('X-HTTP-Method', 'PUT'); // yes, PUT
@@ -230,7 +245,7 @@ class Client {
 		$request->StreamHandle = $fp;
 		$request->ensureHeader("Content-Length", filesize($localPath));
 
-		return false !== $this->context->executeQueryDirect($request);
+		$this->context->executeQueryDirect($request);
 	}
 
 	/**
@@ -415,23 +430,32 @@ class Client {
 		return $lists->getData();
 	}
 
+	/**
+	 * @throws NotFoundException
+	 */
 	public function getDocumentLibrary(string $documentLibrary): SPList {
-		static $list = null;
-		if ($list instanceof SPList) {
-			return $list;
+		if ($this->documentLibrary === null) {
+			$this->ensureConnection();
+			$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
+			$lists = $this->context->getWeb()->getLists()->getByTitle($title);
+			$this->loadAndExecute($lists);
+			if ($lists instanceof SPList) {
+				$this->documentLibrary = $lists;
+			}
 		}
-
-		$this->ensureConnection();
-		$title = substr($documentLibrary, strrpos($documentLibrary, '/'));
-		$lists = $this->context->getWeb()->getLists()->getByTitle($title);
-		$this->loadAndExecute($lists);
-		if ($lists instanceof SPList) {
-			$list = $lists;
-			$rFolder = $list->getRootFolder();
-			$this->loadAndExecute($rFolder);
-			return $list;
+		if ($this->documentLibrary instanceof SPList) {
+			return $this->documentLibrary;
 		}
 		throw new NotFoundException('List not found');
+	}
+
+	public function getDocumentLibrariesRootFolder(string $documentLibrary): Folder {
+		if ($this->documentLibraryRootFolder === null) {
+			$library = $this->getDocumentLibrary($documentLibrary);
+			$this->documentLibraryRootFolder = $library->getRootFolder();
+			$this->loadAndExecute($this->documentLibraryRootFolder);
+		}
+		return $this->documentLibraryRootFolder;
 	}
 
 	/**
