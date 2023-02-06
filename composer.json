@@ -5,7 +5,7 @@
 		}
 	},
 	"require": {
-		"vgrem/php-spo": "2.4.*"
+		"vgrem/php-spo": "3.*"
 	},
 	"scripts": {
 		"cs:check": "php-cs-fixer fix --dry-run --diff",
