@@ -113,12 +113,14 @@ class Client {
 			try {
 				$instance = call_user_func_array($fetchFunction, [$path, $properties]);
 				return $instance;
-			} catch (Exception $e) {
-				if (
-					strpos($e->getMessage(), $path) === false
-					&& !$this->isErrorDoesNotExist($e)
-				) {
-					# Unexpected Exception, pass it on
+			} catch (RequestException $e) {
+				if ($e->getCode() === 404) {
+					continue;
+				}
+				$payload = json_decode($e->getMessage(), true);
+				$responseCodeJson = $payload['error'];
+				$spErrorCode = (int)explode(',', $responseCodeJson['code'])[0];
+				if (!$this->isErrorDoesNotExist($spErrorCode)) {
 					throw $e;
 				}
 			}
@@ -128,25 +130,11 @@ class Client {
 		throw new NotFoundException('File or Folder not found');
 	}
 
-	private function findSharePointErrorCode(Exception $e): ?int {
-		$trace = $e->getTrace()[0];
-		if ($trace['function'] === 'validateResponse' && isset($trace['args'][0])) {
-			$responseCodeJson = json_decode($trace['args'][0], true)['error'];
-		} else {
-			if (!isset($this->lastResponse) || !isset($this->lastResponse['error'])) {
-				return null;
-			}
-
-			$responseCodeJson = $this->lastResponse['error'];
-		}
-
-		return (int)explode(',', $responseCodeJson['code'])[0];
-	}
-
-	private function isErrorDoesNotExist(Exception $e): bool {
-		return in_array($this->findSharePointErrorCode($e), [
+	private function isErrorDoesNotExist(int $sharePointErrorCode): bool {
+		return in_array($sharePointErrorCode, [
+			-2130575338, # Microsoft.SharePoint.SPException: The file $path does not exist
 			-2146232832, # Microsoft.SharePoint.SPException (unclear)
-			-2147024894, # File cannot be found
+			-2147024894, # System.IO.FileNotFoundException: File Not Found.
 			-1, # unknown error
 		]);
 	}
