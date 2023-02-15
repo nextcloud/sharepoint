@@ -28,6 +28,7 @@ use OCA\SharePoint\Client;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\NotFoundException;
 use Office365\Runtime\ClientObject;
+use Office365\Runtime\Http\RequestException;
 use Office365\Runtime\OData\ODataRequest;
 use Office365\SharePoint\ClientContext;
 use Office365\SharePoint\File;
@@ -173,25 +174,11 @@ class SharePointClientTest extends TestCase {
 				static $cnt = 0;
 				$cnt++;
 				if ($cnt === 1) {
-					throw new Exception('The file ' . $path . ' does not exist.');
+					$errorPayload = '{"error":{"code":"-2130575338, Microsoft.SharePoint.SPException","message":{"lang":"en-US","value":"The file ' .  $path . ' does not exist."}}}';
+					throw new RequestException($errorPayload, 404);
 				} elseif ($cnt === 2) {
-					$e = new \Exception('Unknown Error');
-					$reflected = new \ReflectionObject($e);
-					$reflectedTrace = $reflected->getProperty('trace');
-					$reflectedTrace->setAccessible(true);
-					$reflectedTrace->setValue($e, [
-						[
-							'function' => 'validateResponse',
-							'args' => [
-								\json_encode([
-									'error' => [
-										'code' => '-1,opaque'
-									]
-								])
-							]
-						]
-					]);
-					$reflectedTrace->setAccessible(false);
+					$errorPayload = '{"error":{"code":"-2147024894, System.IO.FileNotFoundException","message":{"lang":"en-US","value":"File Not Found."}}}';
+					$e = new RequestException($errorPayload, 404);
 					throw $e;
 				}
 			});
