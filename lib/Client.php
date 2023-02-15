@@ -120,9 +120,10 @@ class Client {
 				$payload = json_decode($e->getMessage(), true);
 				$responseCodeJson = $payload['error'];
 				$spErrorCode = (int)explode(',', $responseCodeJson['code'])[0];
-				if (!$this->isErrorDoesNotExist($spErrorCode)) {
-					throw $e;
+				if ($this->isErrorDoesNotExist($spErrorCode)) {
+					continue;
 				}
+				throw $e;
 			}
 		}
 
