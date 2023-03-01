@@ -150,7 +150,7 @@ class StorageTest extends TestCase {
 
 		$serverPath = $this->documentLibraryTitle;
 		if (trim($path, '/') !== '') {
-			$serverPath .= '/' . trim($path, '/');
+			$serverPath .= '/' . mb_strtolower(trim($path, '/'));
 		}
 
 		$this->client->expects($this->any())
@@ -224,7 +224,7 @@ class StorageTest extends TestCase {
 
 		$serverPath = '/' . $this->documentLibraryTitle;
 		if (trim($path, '/') !== '') {
-			$serverPath .= '/' . trim($path, '/');
+			$serverPath .= '/' . mb_strtolower(trim($path, '/'));
 		}
 
 		$this->prepareMocksForGetDocLibrary();
@@ -292,7 +292,7 @@ class StorageTest extends TestCase {
 	 */
 	public function testMkDir($successful) {
 		$dirName = '/Parentfolder/NewDirectory';
-		$serverPath = '/' . $this->documentLibraryTitle . $dirName;
+		$serverPath = '/' . $this->documentLibraryTitle . mb_strtolower($dirName);
 
 		[, $folderMock] = $this->prepareMocksForGetDocLibrary();
 
@@ -326,7 +326,7 @@ class StorageTest extends TestCase {
 	 */
 	public function testRmDir($successful) {
 		$dirName = '/Parentfolder/TargetDirectory';
-		$serverPath = '/' . $this->documentLibraryTitle . $dirName;
+		$serverPath = '/' . $this->documentLibraryTitle . mb_strtolower($dirName);
 
 		[, $folderMock] = $this->prepareMocksForGetDocLibrary();
 

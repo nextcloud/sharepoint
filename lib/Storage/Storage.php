@@ -694,7 +694,7 @@ class Storage extends Common {
 	 * @return string
 	 */
 	private function formatPath($path) {
-		$path = trim($path, '/');
+		$path = mb_strtolower(trim($path, '/'));
 		$rootFolder = $this->spClient->getDocumentLibrariesRootFolder($this->documentLibrary);
 		$serverUrl = $rootFolder->getProperty(self::SP_PROPERTY_URL);
 		if ($path !== '') {
