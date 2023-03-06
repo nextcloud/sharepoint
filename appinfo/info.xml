@@ -9,7 +9,7 @@
 Supports Sharepoint 2013, 2016 and 365. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.
 
 Learn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)]]></description>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
     <licence>agpl</licence>
     <author mail="blizzz@arthur-schiwon.de">Arthur Schiwon</author>
     <namespace>SharePoint</namespace>
@@ -20,7 +20,7 @@ Learn more about External Storage and Sharepoint on [https://nextcloud.com/stora
     <bugs>https://github.com/nextcloud/sharepoint/issues/</bugs>
     <screenshot>https://raw.githubusercontent.com/nextcloud/sharepoint/master/screenshots/configuration.png</screenshot>
     <dependencies>
-        <nextcloud min-version="26" max-version="26" />
+        <nextcloud min-version="27" max-version="27" />
     </dependencies>
     <commands>
         <command>OCA\SharePoint\Command\ListLibraries</command>
