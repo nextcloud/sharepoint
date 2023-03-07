@@ -1,5 +1,11 @@
 {
+	"autoload": {
+		"psr-4": {
+			"OCA\\SharePoint\\": "lib/"
+		}
+	},
 	"config": {
+		"autoloader-suffix": "SharePoint",
 		"platform": {
 			"php": "8.0"
 		}
