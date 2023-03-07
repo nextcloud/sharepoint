@@ -23,8 +23,6 @@
 
 namespace OCA\SharePoint\AppInfo;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
 use OCA\SharePoint\Listener\ExternalStoragesRegistrationListener;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
