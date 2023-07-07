@@ -1,6 +1,6 @@
 { "translations": {
     "Enforce NTLM auth" : "Forzar a autenticación NTLM",
-    "Acquiring a SAML token is attempted first by default." : "A adquisición dun testemuño SAML téntase primeiro de xeito predeterminado.",
+    "Acquiring a SAML token is attempted first by default." : "A adquisición dun testemuño SAML téntase antes de xeito predeterminado.",
     "SharePoint" : "SharePoint",
     "Host" : "Servidor",
     "Document Library" : "Biblioteca de documentos",
