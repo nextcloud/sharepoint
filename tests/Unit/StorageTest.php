@@ -126,7 +126,7 @@ class StorageTest extends TestCase {
 	 * @dataProvider pathProvider
 	 */
 	public function testStatExisting($path, $returnSize) {
-		$mtime = new \DateTime(null, new \DateTimeZone('Z'));
+		$mtime = new \DateTime('now', new \DateTimeZone('Z'));
 		$mtime->sub(new \DateInterval('P2D'));
 		// a SP time string looks like: 2017-03-22T16:17:23Z
 		$returnMTime = $mtime->format('o-m-d\TH:i:se');
@@ -172,7 +172,7 @@ class StorageTest extends TestCase {
 	public function testStatDocumentLibrary() {
 		$path = '';
 
-		$mtime = new \DateTime(null, new \DateTimeZone('Z'));
+		$mtime = new \DateTime('now', new \DateTimeZone('Z'));
 		$mtime->sub(new \DateInterval('P2D'));
 		// a SP time string looks like: 2017-03-22T16:17:23Z
 		$returnMTime = $mtime->format('o-m-d\TH:i:se');
