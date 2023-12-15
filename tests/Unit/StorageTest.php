@@ -178,6 +178,16 @@ class StorageTest extends TestCase {
 		$returnMTime = $mtime->format('o-m-d\TH:i:se');
 		$size = FileInfo::SPACE_UNKNOWN;
 
+		$rootFolderMock = $this->createMock(Folder::class);
+		$rootFolderMock->expects($this->once())
+			->method('getProperty')
+			->with(Storage::SP_PROPERTY_URL)
+			->willReturn($this->documentLibraryTitle);
+
+		$this->client->expects($this->any())
+			->method('getDocumentLibrariesRootFolder')
+			->willReturn($rootFolderMock);
+
 		$dLibMock = $this->createMock(SPList::class);
 		$dLibMock->expects($this->once())
 			->method('getProperty')
