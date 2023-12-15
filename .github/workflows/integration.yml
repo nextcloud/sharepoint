@@ -49,12 +49,15 @@ jobs:
           path: apps/${{ env.APP_NAME }}
 
       - name: Set up php ${{ matrix.php-versions }}
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@e6f75134d35752277f093989e72e140eaa222f35 # v2
         with:
           php-version: ${{ matrix.php-versions }}
-          extensions: mbstring, iconv, fileinfo, intl, sqlite, pdo_sqlite
-          ini-values: zend.exception_ignore_args=Off
+          # https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite
           coverage: none
+          ini-file: development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install app dependencies
         working-directory: apps/${{ env.APP_NAME }}
@@ -74,6 +77,13 @@ jobs:
           ./occ app:enable files_external
           ./occ app:enable --force ${{ env.APP_NAME }}
           php -S localhost:8080 &
-      - name: Integration
+
+      - name: Execute integration tests
         working-directory: apps/${{ env.APP_NAME }}/tests/Integration
-        run: bash run.sh
+        run: |
+          APP_INTEGRATION_DIR=$PWD
+          ROOT_DIR=${APP_INTEGRATION_DIR}/../../../..
+          composer install
+          cp ${ROOT_DIR}/build/integration/features/bootstrap/CommandLine.php ${APP_INTEGRATION_DIR}/features/bootstrap/
+          export TEST_SERVER_URL="http://localhost:8080/"
+          ${APP_INTEGRATION_DIR}/vendor/bin/behat --colors
