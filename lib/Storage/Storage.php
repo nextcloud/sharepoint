@@ -31,14 +31,14 @@ use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
 use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\NotFoundException;
+use OCA\SharePoint\Vendor\Office365\Runtime\ClientObject;
+use OCA\SharePoint\Vendor\Office365\Runtime\ClientObjectCollection;
+use OCA\SharePoint\Vendor\Office365\SharePoint\File;
+use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
 use OCP\Files\FileInfo;
 use OCP\ILogger;
 use OCP\ITempManager;
 use OCP\Server;
-use Office365\Runtime\ClientObject;
-use Office365\Runtime\ClientObjectCollection;
-use Office365\SharePoint\File;
-use Office365\SharePoint\Folder;
 
 class Storage extends Common {
 	public const SP_PROPERTY_SIZE = 'Length';
