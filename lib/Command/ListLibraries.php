@@ -26,7 +26,7 @@ namespace OCA\SharePoint\Command;
 use OC\Core\Command\Base;
 use OCA\SharePoint\ClientFactory;
 use OCA\SharePoint\ContextsFactory;
-use Office365\SharePoint\SPList;
+use OCA\SharePoint\Vendor\Office365\SharePoint\SPList;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;

@@ -25,16 +25,16 @@ namespace OCA\Files_External\Tests\Storage;
 
 use InvalidArgumentException;
 use OC\Cache\CappedMemoryCache;
-use OCA\SharePoint\NotFoundException;
-use OCA\SharePoint\Storage\Storage;
-use OCP\Files\FileInfo;
-use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
-use Office365\SharePoint\ClientContext;
-use Office365\SharePoint\File;
-use Office365\SharePoint\Folder;
-use Office365\SharePoint\SPList;
+use OCA\SharePoint\ContextsFactory;
+use OCA\SharePoint\NotFoundException;
+use OCA\SharePoint\Storage\Storage;
+use OCA\SharePoint\Vendor\Office365\SharePoint\ClientContext;
+use OCA\SharePoint\Vendor\Office365\SharePoint\File;
+use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
+use OCA\SharePoint\Vendor\Office365\SharePoint\SPList;
+use OCP\Files\FileInfo;
 use Test\TestCase;
 
 class StorageTest extends TestCase {
