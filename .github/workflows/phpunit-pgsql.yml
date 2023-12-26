@@ -52,7 +52,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14
+        image: ghcr.io/nextcloud/continuous-integration-postgres-14:latest
         ports:
           - 4444:5432/tcp
         env:
@@ -140,6 +140,11 @@ jobs:
         if: steps.check_integration.outcome == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: composer run test:integration
+
+      - name: Print logs
+        if: always()
+        run: |
+          cat data/nextcloud.log
 
       - name: Skipped
         # Fail the action when neither unit nor integration tests ran
