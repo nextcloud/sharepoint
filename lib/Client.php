@@ -24,23 +24,23 @@
 namespace OCA\SharePoint;
 
 use Exception;
-use Office365\Runtime\ClientObject;
-use Office365\Runtime\ClientObjectCollection;
-use Office365\Runtime\Http\RequestException;
-use Office365\Runtime\Http\RequestOptions;
-use Office365\Runtime\Http\Response;
-use Office365\SharePoint\BasePermissions;
-use Office365\SharePoint\ClientContext;
-use Office365\SharePoint\Field;
-use Office365\SharePoint\File;
-use Office365\SharePoint\FileCreationInformation;
-use Office365\SharePoint\Folder;
-use Office365\SharePoint\Internal\Paths\FileContentPath;
-use Office365\SharePoint\SPList;
+use OCA\SharePoint\Storage\Storage;
+use OCA\SharePoint\Vendor\Office365\Runtime\ClientObject;
+use OCA\SharePoint\Vendor\Office365\Runtime\ClientObjectCollection;
+use OCA\SharePoint\Vendor\Office365\Runtime\Http\RequestException;
+use OCA\SharePoint\Vendor\Office365\Runtime\Http\RequestOptions;
+use OCA\SharePoint\Vendor\Office365\Runtime\Http\Response;
+use OCA\SharePoint\Vendor\Office365\SharePoint\BasePermissions;
+use OCA\SharePoint\Vendor\Office365\SharePoint\ClientContext;
+use OCA\SharePoint\Vendor\Office365\SharePoint\Field;
+use OCA\SharePoint\Vendor\Office365\SharePoint\File;
+use OCA\SharePoint\Vendor\Office365\SharePoint\FileCreationInformation;
+use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
+use OCA\SharePoint\Vendor\Office365\SharePoint\Internal\Paths\FileContentPath;
+use OCA\SharePoint\Vendor\Office365\SharePoint\SPList;
 use Psr\Log\LoggerInterface;
 use function explode;
 use function json_decode;
-use OCA\SharePoint\Storage\Storage;
 
 class Client {
 	public const DEFAULT_PROPERTIES = [
