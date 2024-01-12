@@ -24,8 +24,8 @@
 
 namespace OCA\SharePoint;
 
-use Office365\Runtime\Auth\UserCredentials;
-use Office365\SharePoint\ClientContext;
+use OCA\SharePoint\Vendor\Office365\Runtime\Auth\UserCredentials;
+use OCA\SharePoint\Vendor\Office365\SharePoint\ClientContext;
 
 class ContextsFactory {
 	/**
