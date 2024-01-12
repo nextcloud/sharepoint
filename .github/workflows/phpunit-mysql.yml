@@ -85,7 +85,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-versions }}
           # https://docs.nextcloud.com/server/stable/admin_manual/installation/source_installation.html#prerequisites-for-manual-installation
-          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib,mysql, pdo_mysql
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, mysql, pdo_mysql
           coverage: none
           ini-file: development
         env:
@@ -146,6 +146,11 @@ jobs:
         if: steps.check_integration.outcome == 'success'
         working-directory: apps/${{ env.APP_NAME }}
         run: composer run test:integration
+
+      - name: Print logs
+        if: always()
+        run: |
+          cat data/nextcloud.log
 
       - name: Skipped
         # Fail the action when neither unit nor integration tests ran
