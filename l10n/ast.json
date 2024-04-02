@@ -1,4 +1,8 @@
 { "translations": {
-    "Host" : "Agospiador"
+    "SharePoint" : "SharePoint",
+    "Host" : "Agospiador",
+    "Document Library" : "Biblioteca de documentos",
+    "SharePoint Backend" : "Backend de SharePoint",
+    "SharePoint Backend for External storages" : "Backend de SharePoint p'almacenamientos esternos"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
