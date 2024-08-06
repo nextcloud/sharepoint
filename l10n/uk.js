@@ -2,7 +2,7 @@ OC.L10N.register(
     "sharepoint",
     {
     "Enforce NTLM auth" : "Застосовувати авторизацію NTLM",
-    "Acquiring a SAML token is attempted first by default." : "За замовчуванням спочатку намагається отримати маркер SAML.",
+    "Acquiring a SAML token is attempted first by default." : "Типово спочатку намагатися отримати токен SAML.",
     "SharePoint" : "SharePoint",
     "Host" : "Хост",
     "Document Library" : "Бібліотека документів",
