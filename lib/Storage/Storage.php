@@ -36,9 +36,9 @@ use OCA\SharePoint\Vendor\Office365\Runtime\ClientObjectCollection;
 use OCA\SharePoint\Vendor\Office365\SharePoint\File;
 use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
 use OCP\Files\FileInfo;
-use OCP\ILogger;
 use OCP\ITempManager;
 use OCP\Server;
+use function OCP\Log\logger;
 
 class Storage extends Common {
 	public const SP_PROPERTY_SIZE = 'Length';
@@ -134,12 +134,7 @@ class Storage extends Common {
 			return true;
 		} catch (\Exception $e) {
 			$this->fileCache->remove($serverUrl);
-			\OC::$server->getLogger()->logException($e,
-				[
-					'app' => 'sharepoint',
-					'level' => ILogger::INFO
-				]
-			);
+			logger('sharepoint')->info($e->getMessage(), ['exception' => $e]);
 			return false;
 		}
 	}
@@ -251,7 +246,7 @@ class Storage extends Common {
 			$dLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
 			$mtimeValue = (string)$dLib->getProperty(self::SP_PROPERTY_MTIME_LAST_ITEM);
 		} catch (NotFoundException $e) {
-			\OC::$server->getLogger()->logException($e);
+			logger('sharepoint')->error($e->getMessage(), ['exception' => $e]);
 			return false;
 		}
 
@@ -660,7 +655,7 @@ class Storage extends Common {
 				$this->fileCache->set($serverUrl, false);
 				throw $e;
 			} catch (\Exception $e) {
-				\OC::$server->getLogger()->logException($e, ['app' => 'sharepoint']);
+				logger('sharepoint')->error($e->getMessage(), ['exception' => $e]);
 				throw new NotFoundException($e->getMessage(), $e->getCode(), $e);
 			}
 			$cacheItem = $entry ?: [];
