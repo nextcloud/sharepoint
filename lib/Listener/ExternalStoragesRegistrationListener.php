@@ -30,18 +30,15 @@ use OCA\SharePoint\Backend\Provider as BackendProvider;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 
+/**
+ * @template-implements IEventListener<Event>
+ */
 class ExternalStoragesRegistrationListener implements IEventListener {
-	/** @var BackendService */
-	private $backendService;
-	/** @var BackendProvider */
-	private $backendProvider;
 
 	public function __construct(
-		BackendService $backendService,
-		BackendProvider $backendProvider
+		private BackendService $backendService,
+		private BackendProvider $backendProvider
 	) {
-		$this->backendService = $backendService;
-		$this->backendProvider = $backendProvider;
 	}
 
 	public function handle(Event $event): void {

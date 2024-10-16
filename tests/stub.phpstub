@@ -1,0 +1,163 @@
+<?php
+
+namespace OC\Core\Command {
+	use Symfony\Component\Console\Output\OutputInterface;
+
+	class Base extends \Symfony\Component\Console\Command\Command {
+	}
+}
+
+namespace OC\Files\Storage {
+	class Common implements \OCP\Files\Storage\IStorage, \OCP\Files\Storage\ILockingStorage, \OCP\Files\Storage\IWriteStreamStorage, \OCP\Files\Storage\IConstructableStorage {
+		abstract public function isReadable($path): bool;
+		abstract public function isDeletable($path): bool;
+		abstract public function is_dir($path): bool;
+		abstract public function is_file($path): bool;
+		abstract public function filesize($path): int|float|false;
+		abstract public function isSharable($path): bool;
+		abstract public function getPermissions($path): int;
+		abstract public function filemtime($path): int|false;
+		abstract public function file_get_contents($path): string|false;
+		abstract public function file_put_contents($path, $data): int|float|false;
+		abstract public function copy($source, $target): bool;
+		abstract public function getMimeType($path): string|false;
+		abstract public function hash($type, $path, $raw = false): string|false;
+		abstract public function free_space($path): int|float|false;
+		abstract public function getLocalFile($path): string|false;
+		abstract public function hasUpdated($path, $time): bool;
+		abstract public function getETag($path): string|false;
+		abstract public function isLocal(): bool;
+		abstract public function instanceOfStorage($class): bool;
+		abstract public function getDirectDownload($path): array|false;
+		abstract public function verifyPath($path, $fileName): void;
+		abstract public function copyFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime = false): bool;
+		abstract public function moveFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath): bool;
+		abstract public function test(): bool;
+		abstract public function getAvailability(): array;
+		abstract public function setAvailability($isAvailable): void;
+		abstract public function needsPartFile(): bool;
+		abstract public function getOwner($path): string|false;
+		abstract public function setOwner(?string $user): void;
+		abstract public function getCache($path = '', $storage = null): ICache;
+		abstract public function getPropagator($storage = null): IPropagator;
+		abstract public function getScanner($path = '', $storage = null): IScanner;
+		abstract public function getUpdater($storage = null): IUpdater;
+		abstract public function getWatcher($path = '', $storage = null): IWatcher;
+		abstract public function acquireLock($path, $type, ILockingProvider $provider): void;
+		abstract public function releaseLock($path, $type, ILockingProvider $provider): void;
+		abstract public function changeLock($path, $type, ILockingProvider $provider): void;
+		abstract public function writeStream(string $path, $stream, ?int $size = null): int;
+	}
+}
+
+namespace OCA\Files_External\Service {
+	use OCA\Files_External\Lib\Config\IBackendProvider;
+
+	class BackendService {
+		abstract public function registerBackendProvider(IBackendProvider $provider);
+	}
+}
+
+namespace OCA\Files_External\Lib {
+	class DefinitionParameter {
+		public const VALUE_BOOLEAN = 1;
+		public function __construct(string $name, string $text, $defaultValue = null);
+		public function setTooltip(string $tooltip);
+		public function setType(int $type);
+	}
+}
+
+namespace OCA\Files_External\Lib\Auth\ {
+	class AuthMechanism {
+		public const SCHEME_PASSWORD = 'password';
+	}
+}
+
+namespace OCA\Files_External\Lib\Auth\Password {
+	use OCP\IL10N;
+
+	class Password {
+		public function __construct(IL10N $l);
+	}
+}
+
+namespace OCA\Files_External\Lib\Backend {
+	class Backend {
+		public function setIdentifier(string $identifier): self;
+		public function setStorageClass($class);
+	}
+}
+
+namespace OCA\Files_External\Lib\Config {
+	interface IBackendProvider {
+		abstract public function getBackends();
+	}
+}
+
+namespace Symfony\Component\Console\Input {
+	class InputInterface {
+		public function getOption(string $key) {}
+		public function setOption(string $key, $value) {}
+		public function getArgument(string $key) {}
+	}
+	class InputArgument {
+		const REQUIRED = 0;
+		const OPTIONAL = 1;
+		const IS_ARRAY = 1;
+	}
+	class InputOption {
+		const VALUE_NONE = 1;
+		const VALUE_REQUIRED = 1;
+		const VALUE_OPTIONAL = 1;
+	}
+}
+
+namespace Symfony\Component\Console\Question {
+	class ConfirmationQuestion {
+		public function __construct(string $text, bool $default) {}
+	}
+
+	class Question {
+		abstract public function __construct(string $question, $default = null);
+		abstract public function setHidden(bool $hidden);
+	}
+}
+
+namespace Symfony\Component\Console\Output {
+	class OutputInterface {
+		public const VERBOSITY_VERBOSE = 1;
+		public function writeln($text, int $flat = 0) {}
+		public function isVerbose(): bool {}
+		public function isVeryVerbose(): bool {}
+	}
+}
+
+namespace Symfony\Component\Console\Command {
+    abstract class Command {
+        public function __construct();
+        public function setName(string $name);
+        public function getHelper(string $name);
+    }
+}
+
+namespace Symfony\Component\Console\Helper {
+	use Symfony\Component\Console\Input\InputInterface;
+	use Symfony\Component\Console\Output\OutputInterface;
+	use Symfony\Component\Console\Question\Question;
+
+	class QuestionHelper {
+		abstract public function ask(InputInterface $input, OutputInterface $output, Question $question);
+	}
+
+	class Table {
+		public function __construct(OutputInterface $output);
+		public function render();
+		public function addRow($row);
+		public function setHeaders(array $headers);
+		public function setRows(array $rows);
+	}
+}
+
+namespace OCP\Log {
+        public function logger(?string $appId = null): \Psr\Log\LoggerInterface;
+}

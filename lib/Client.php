@@ -29,7 +29,6 @@ use OCA\SharePoint\Vendor\Office365\Runtime\ClientObject;
 use OCA\SharePoint\Vendor\Office365\Runtime\ClientObjectCollection;
 use OCA\SharePoint\Vendor\Office365\Runtime\Http\RequestException;
 use OCA\SharePoint\Vendor\Office365\Runtime\Http\RequestOptions;
-use OCA\SharePoint\Vendor\Office365\Runtime\Http\Response;
 use OCA\SharePoint\Vendor\Office365\SharePoint\BasePermissions;
 use OCA\SharePoint\Vendor\Office365\SharePoint\ClientContext;
 use OCA\SharePoint\Vendor\Office365\SharePoint\Field;
@@ -41,6 +40,7 @@ use OCA\SharePoint\Vendor\Office365\SharePoint\SPList;
 use Psr\Log\LoggerInterface;
 use function explode;
 use function json_decode;
+use function OCP\Log\logger;
 
 class Client {
 	public const DEFAULT_PROPERTIES = [
@@ -66,8 +66,6 @@ class Client {
 	/** @var string[] */
 	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
 
-	/** @var array */
-	protected $lastResponse;
 	private LoggerInterface $logger;
 	// as there is one client per storage it is a 1:1 Client<->DocumentLibrary relation (lazy-loading)
 	private ?SPList $documentLibrary = null;
@@ -232,7 +230,7 @@ class Client {
 		$request->ensureHeader('X-HTTP-Method', 'PUT'); // yes, PUT
 		$this->context->ensureFormDigest($request);
 		$request->StreamHandle = $fp;
-		$request->ensureHeader("Content-Length", filesize($localPath));
+		$request->ensureHeader("Content-Length", (string)filesize($localPath));
 
 		$this->context->executeQueryDirect($request);
 	}
@@ -455,10 +453,6 @@ class Client {
 	 */
 	public function loadAndExecute(ClientObject $object, array $properties = null) {
 		$this->context->load($object, $properties);
-		$r = $this->context->getPendingRequest();
-		$r->afterExecuteRequest(function (Response $response) {
-			$this->lastResponse = $response->getContent();
-		});
 		$this->context->executeQuery();
 	}
 
@@ -485,9 +479,7 @@ class Client {
 			}
 			$this->context = $this->contextsFactory->getClientContext($this->sharePointUrl, $this->credentials['user'], $this->credentials['password']);
 		} catch (Exception $e) {
-			/** @var LoggerInterface $logger */
-			$logger = \OC::$server->get(LoggerInterface::class); // FIXME: DI
-			$logger->debug(
+			logger('sharepoint')->debug(
 				'Failed to acquire token for user, fall back to NTLM auth',
 				[
 					'app' => 'sharepoint',
