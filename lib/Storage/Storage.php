@@ -341,13 +341,12 @@ class Storage extends Common {
 	}
 
 	/**
-	 * @param string $path1
-	 * @param string $path2
-	 * @return bool
+	 * @param string $source
+	 * @param string $target
 	 */
-	public function rename($path1, $path2) {
-		$oldPath = $this->formatPath($path1);
-		$newPath = $this->formatPath($path2);
+	public function rename($source, $target): bool {
+		$oldPath = $this->formatPath($source);
+		$newPath = $this->formatPath($target);
 
 		try {
 			$item = $this->getFileOrFolder($newPath);
@@ -472,7 +471,7 @@ class Storage extends Common {
 	 * @param string $path
 	 * @return bool
 	 */
-	public function isCreatable($path) {
+	public function isCreatable($path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_CREATE);
 		} catch (\Exception $e) {
@@ -484,7 +483,7 @@ class Storage extends Common {
 	 * @param string $path
 	 * @return bool
 	 */
-	public function isUpdatable($path) {
+	public function isUpdatable($path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_UPDATE);
 		} catch (\Exception $e) {
@@ -496,7 +495,7 @@ class Storage extends Common {
 	 * @param string $path
 	 * @return bool
 	 */
-	public function isReadable($path) {
+	public function isReadable($path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_READ);
 		} catch (\Exception $e) {
@@ -508,7 +507,7 @@ class Storage extends Common {
 	 * @param string $path
 	 * @return bool
 	 */
-	public function isDeletable($path) {
+	public function isDeletable($path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_DELETE);
 		} catch (\Exception $e) {
@@ -521,7 +520,7 @@ class Storage extends Common {
 	 * @param int $permissionType
 	 * @return bool
 	 */
-	private function hasPermission($path, $permissionType) {
+	private function hasPermission($path, $permissionType): bool {
 		$serverUrl = $this->formatPath($path);
 		return $this->getUserPermissions($serverUrl)->has($permissionType);
 	}
@@ -535,7 +534,7 @@ class Storage extends Common {
 	 * @return bool
 	 * @since 6.0.0
 	 */
-	public function touch($path, $mtime = null) {
+	public function touch($path, $mtime = null): bool {
 		return false;
 	}
 
@@ -544,7 +543,7 @@ class Storage extends Common {
 	 *
 	 * @param array $parameters
 	 */
-	private function fixDI(array $parameters) {
+	private function fixDI(array $parameters): void {
 		if (isset($parameters['contextFactory'])
 			&& $parameters['contextFactory'] instanceof ContextsFactory) {
 			$this->contextsFactory = $parameters['contextFactory'];
@@ -583,7 +582,7 @@ class Storage extends Common {
 	 * @param $serverUrl
 	 * @return ClientObjectCollection[]
 	 */
-	private function getFolderContents($serverUrl) {
+	private function getFolderContents($serverUrl): array {
 		$folder = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
 		if ($entry === null || !isset($entry['children'])) {
