@@ -53,22 +53,22 @@ class Storage extends Common {
 	public const SP_PERMISSION_UPDATE = 3;
 	public const SP_PERMISSION_DELETE = 4;
 
-	/** @var  string */
+	/** @var string */
 	protected $server;
 
-	/** @var  string */
+	/** @var string */
 	protected $documentLibrary;
 
-	/** @var  string */
+	/** @var string */
 	protected $authUser;
 
-	/** @var  string */
+	/** @var string */
 	protected $authPwd;
 
-	/** @var  Client */
+	/** @var Client */
 	protected $spClient;
 
-	/** @var  CappedMemoryCache */
+	/** @var CappedMemoryCache */
 	protected $fileCache;
 	/** @var false|mixed */
 	protected $forceNtlm;
@@ -589,7 +589,7 @@ class Storage extends Common {
 			// cache children instances
 			foreach ($contents as $collection) {
 				foreach ($collection->getData() as $item) {
-					/** @var  File|Folder $item */
+					/** @var File|Folder $item */
 					$url = $item->getProperty(self::SP_PROPERTY_URL);
 					if (is_null($url)) {
 						// at least on SP13 requesting self::SP_PROPERTY_URL against folders causes an exception

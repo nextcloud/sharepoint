@@ -41,7 +41,7 @@ use Psr\Log\LoggerInterface;
 use Test\TestCase;
 
 class SharePointClientTest extends TestCase {
-	/** @var  ContextsFactory|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var ContextsFactory|\PHPUnit_Framework_MockObject_MockObject */
 	protected $contextsFactory;
 
 	protected string $documentLibraryTitle;
@@ -174,7 +174,7 @@ class SharePointClientTest extends TestCase {
 				static $cnt = 0;
 				$cnt++;
 				if ($cnt === 1) {
-					$errorPayload = '{"error":{"code":"-2130575338, Microsoft.SharePoint.SPException","message":{"lang":"en-US","value":"The file ' .  $path . ' does not exist."}}}';
+					$errorPayload = '{"error":{"code":"-2130575338, Microsoft.SharePoint.SPException","message":{"lang":"en-US","value":"The file ' . $path . ' does not exist."}}}';
 					throw new RequestException($errorPayload, 404);
 				} elseif ($cnt === 2) {
 					$errorPayload = '{"error":{"code":"-2147024894, System.IO.FileNotFoundException","message":{"lang":"en-US","value":"File Not Found."}}}';
@@ -198,7 +198,7 @@ class SharePointClientTest extends TestCase {
 	public function testCreateFolderSuccess() {
 		$dirName = 'New Project Dir';
 		$parentPath = '/' . $this->documentLibraryTitle . '/Our Directory';
-		$path = $parentPath . '/'. $dirName;
+		$path = $parentPath . '/' . $dirName;
 
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
 		$folderCollectionMock->expects($this->once())
@@ -233,7 +233,7 @@ class SharePointClientTest extends TestCase {
 	public function testCreateFolderError() {
 		$dirName = 'New Project Dir';
 		$parentPath = '/' . $this->documentLibraryTitle . '/Our Directory';
-		$path = $parentPath . '/'. $dirName;
+		$path = $parentPath . '/' . $dirName;
 
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
 		$folderCollectionMock->expects($this->once())

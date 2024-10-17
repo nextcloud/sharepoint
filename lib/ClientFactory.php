@@ -36,7 +36,7 @@ class ClientFactory {
 		ContextsFactory $contextsFactory,
 		string $sharePointUrl,
 		array $credentials,
-		array $options = []
+		array $options = [],
 	): Client {
 		return new Client(
 			$contextsFactory,

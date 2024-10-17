@@ -38,19 +38,19 @@ use OCP\Files\FileInfo;
 use Test\TestCase;
 
 class StorageTest extends TestCase {
-	/** @var  Storage */
+	/** @var Storage */
 	protected $storage;
 
-	/** @var  ContextsFactory|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var ContextsFactory|\PHPUnit_Framework_MockObject_MockObject */
 	protected $factory;
 
-	/** @var  ClientContext|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var ClientContext|\PHPUnit_Framework_MockObject_MockObject */
 	protected $clientContextMock;
 
-	/** @var  string */
+	/** @var string */
 	protected $documentLibraryTitle = 'Fancy Documents';
 
-	/** @var  SPList|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var SPList|\PHPUnit_Framework_MockObject_MockObject */
 	protected $sharePointList;
 
 	/** @var string */
@@ -62,13 +62,13 @@ class StorageTest extends TestCase {
 	/** @var string */
 	protected $examplePwd = 'a123456';
 
-	/** @var  ClientFactory|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var ClientFactory|\PHPUnit_Framework_MockObject_MockObject */
 	protected $clientFactory;
 
-	/** @var  Client|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var Client|\PHPUnit_Framework_MockObject_MockObject */
 	protected $client;
 
-	/** @var  CappedMemoryCache|\PHPUnit_Framework_MockObject_MockObject */
+	/** @var CappedMemoryCache|\PHPUnit_Framework_MockObject_MockObject */
 	protected $fileCache;
 
 	protected function setUp(): void {
