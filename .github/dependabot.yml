@@ -1,0 +1,61 @@
+version: 2
+updates:
+# Composer: Code-Dependencies
+- package-ecosystem: composer
+  directory: "/"
+  commit-message:
+    prefix: "build"
+    include: "scope"
+  versioning-strategy: "increase"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "03:00"
+    timezone: Europe/Berlin
+
+- package-ecosystem: composer
+  target-branch: stable30
+  directory: "/"
+  commit-message:
+    prefix: "build"
+    include: "scope"
+  versioning-strategy: "increase"
+  ignore:
+    - dependency-name: "*"
+      update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "03:00"
+    timezone: Europe/Berlin
+
+- package-ecosystem: composer
+  target-branch: stable29
+  directory: "/"
+  commit-message:
+    prefix: "build"
+    include: "scope"
+  versioning-strategy: "increase"
+  ignore:
+    - dependency-name: "*"
+      update-types: ["version-update:semver-major", "version-update:semver-minor"]
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "03:00"
+    timezone: Europe/Berlin
+
+# Composer: Tooling
+- package-ecosystem: composer
+  directories:
+    - "/tests/integration"
+    - "/vendor-bin/php-scoper"
+  commit-message:
+    prefix: "ci"
+    include: "scope"
+  versioning-strategy: "increase"
+  schedule:
+    interval: weekly
+    day: saturday
+    time: "03:00"
+    timezone: Europe/Berlin
