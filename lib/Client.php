@@ -49,7 +49,7 @@ class Client {
 		Storage::SP_PROPERTY_SIZE,
 	];
 
-	/** @var  ClientContext */
+	/** @var ClientContext */
 	protected $context;
 
 	/** @var array */
@@ -57,7 +57,7 @@ class Client {
 	/** @var ContextsFactory */
 	private $contextsFactory;
 
-	/** @var  string */
+	/** @var string */
 	private $sharePointUrl;
 
 	/** @var string[] */
@@ -76,7 +76,7 @@ class Client {
 		LoggerInterface $logger,
 		string $sharePointUrl,
 		array $credentials,
-		array $options
+		array $options,
 	) {
 		$this->contextsFactory = $contextsFactory;
 		$this->sharePointUrl = $sharePointUrl;
@@ -95,7 +95,7 @@ class Client {
 	 * @throws NotFoundException
 	 * @throws Exception
 	 */
-	public function fetchFileOrFolder($path, array $properties = null) {
+	public function fetchFileOrFolder($path, ?array $properties = null) {
 		$fetchFileFunc = function ($path, $props) {
 			return $this->fetchFile($path, $props);
 		};
@@ -145,7 +145,7 @@ class Client {
 	 * @param array|null $properties
 	 * @return File
 	 */
-	public function fetchFile($relativeServerPath, array $properties = null): File {
+	public function fetchFile($relativeServerPath, ?array $properties = null): File {
 		$this->ensureConnection();
 		$file = $this->context->getWeb()->getFileByServerRelativeUrl($relativeServerPath);
 		$this->loadAndExecute($file, $properties);
@@ -159,7 +159,7 @@ class Client {
 	 * @param array|null $properties
 	 * @return Folder
 	 */
-	public function fetchFolder($relativeServerPath, array $properties = null) {
+	public function fetchFolder($relativeServerPath, ?array $properties = null) {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
 		$allFields = $folder->getListItemAllFields();
@@ -230,7 +230,7 @@ class Client {
 		$request->ensureHeader('X-HTTP-Method', 'PUT'); // yes, PUT
 		$this->context->ensureFormDigest($request);
 		$request->StreamHandle = $fp;
-		$request->ensureHeader("Content-Length", (string)filesize($localPath));
+		$request->ensureHeader('Content-Length', (string)filesize($localPath));
 
 		$this->context->executeQueryDirect($request);
 	}
@@ -451,7 +451,7 @@ class Client {
 	 * @param ClientObject $object
 	 * @param array|null $properties
 	 */
-	public function loadAndExecute(ClientObject $object, array $properties = null) {
+	public function loadAndExecute(ClientObject $object, ?array $properties = null) {
 		$this->context->load($object, $properties);
 		$this->context->executeQuery();
 	}

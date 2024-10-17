@@ -35,7 +35,7 @@ class ContextsFactory {
 		string $url,
 		string $user,
 		string $password,
-		bool $useNtlm = false
+		bool $useNtlm = false,
 	): ClientContext {
 		$clientContext = new ClientContext($url);
 		$credentials = new UserCredentials($user, $password);
@@ -50,14 +50,14 @@ class ContextsFactory {
 	 */
 	protected function withCredentials(
 		ClientContext $clientContext,
-		UserCredentials $userCredentials
+		UserCredentials $userCredentials,
 	): ClientContext {
 		return $clientContext->withCredentials($userCredentials);
 	}
 
 	protected function getWithNtlm(
 		ClientContext $clientContext,
-		UserCredentials $userCredentials
+		UserCredentials $userCredentials,
 	) {
 		return $clientContext->withNtlm($userCredentials);
 	}

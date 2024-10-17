@@ -37,7 +37,7 @@ class ExternalStoragesRegistrationListener implements IEventListener {
 
 	public function __construct(
 		private BackendService $backendService,
-		private BackendProvider $backendProvider
+		private BackendProvider $backendProvider,
 	) {
 	}
 
