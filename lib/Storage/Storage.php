@@ -441,7 +441,7 @@ class Storage extends Common {
 				$this->fileCache->set($serverUrl, ['instance' => $file]);
 			}
 		} catch (\Exception $e) {
-			// noop
+			logger('sharepoint')->error('Failed to write back: ' . $e->getMessage(), ['exception' => $e]);
 		}
 	}
 
