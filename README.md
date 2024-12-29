@@ -1,4 +1,11 @@
+<!--
+  - SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
+  - SPDX-License-Identifier: AGPL-3.0-or-later
+-->
 # SharePoint
+
+[![REUSE status](https://api.reuse.software/badge/github.com/nextcloud/sharepoint)](https://api.reuse.software/info/github.com/nextcloud/sharepoint)
+
 💾 Nextcloud SharePoint Backend for External storages
 
 The SharePoint Backend allows administrators to add SharePoint document libraries as folders in Nextcloud. This offers an easy way for users to access SharePoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization. Users can use the desktop client, mobile apps or web interface and comment, tag, share and collaboratively edit files on SharePoint just like with any other data on Nextcloud.
