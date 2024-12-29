@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+/**
+ * SPDX-FileCopyrightText: 2023 Nextcloud GmbH and Nextcloud contributors
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 use Isolated\Symfony\Component\Finder\Finder;
 
 // You can do your own things here, e.g. collecting symbols to expose dynamically
