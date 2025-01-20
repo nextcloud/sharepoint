@@ -10,10 +10,10 @@ namespace OCA\SharePoint;
 use Psr\Log\LoggerInterface;
 
 class ClientFactory {
-	private LoggerInterface $logger;
 
-	public function __construct(LoggerInterface $logger) {
-		$this->logger = $logger;
+	public function __construct(
+		private LoggerInterface $logger,
+	) {
 	}
 
 	public function getClient(

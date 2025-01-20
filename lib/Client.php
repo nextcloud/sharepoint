@@ -33,53 +33,31 @@ class Client {
 		Storage::SP_PROPERTY_SIZE,
 	];
 
-	/** @var ClientContext */
-	protected $context;
+	protected ?ClientContext $context;
 
-	/** @var array */
-	protected $options;
-	/** @var ContextsFactory */
-	private $contextsFactory;
+	private array $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
 
-	/** @var string */
-	private $sharePointUrl;
-
-	/** @var string[] */
-	private $credentials;
-
-	/** @var string[] */
-	private $knownSP2013SystemFolders = ['Forms', 'Item', 'Attachments'];
-
-	private LoggerInterface $logger;
 	// as there is one client per storage it is a 1:1 Client<->DocumentLibrary relation (lazy-loading)
 	private ?SPList $documentLibrary = null;
 	private ?Folder $documentLibraryRootFolder = null;
 
 	public function __construct(
-		ContextsFactory $contextsFactory,
-		LoggerInterface $logger,
-		string $sharePointUrl,
-		array $credentials,
-		array $options,
+		private ContextsFactory $contextsFactory,
+		private LoggerInterface $logger,
+		private string $sharePointUrl,
+		private array $credentials,
+		protected array $options,
 	) {
-		$this->contextsFactory = $contextsFactory;
-		$this->sharePointUrl = $sharePointUrl;
-		$this->credentials = $credentials;
-		$this->options = $options;
-		$this->logger = $logger;
 	}
 
 	/**
 	 * Returns the corresponding File or Folder object for the provided path.
 	 * If none can be retrieved, an exception is thrown.
 	 *
-	 * @param string $path
-	 * @param array $properties
-	 * @return File|Folder
 	 * @throws NotFoundException
 	 * @throws Exception
 	 */
-	public function fetchFileOrFolder($path, ?array $properties = null) {
+	public function fetchFileOrFolder(string $path, ?array $properties = null): File|Folder {
 		$fetchFileFunc = function ($path, $props) {
 			return $this->fetchFile($path, $props);
 		};
@@ -87,7 +65,7 @@ class Client {
 			return $this->fetchFolder($path, $props);
 		};
 		$fetchers = [ $fetchFileFunc, $fetchFolderFunc ];
-		if (strpos($path, '.') === false) {
+		if (!str_contains($path, '.')) {
 			$fetchers = array_reverse($fetchers);
 		}
 
@@ -124,12 +102,8 @@ class Client {
 
 	/**
 	 * returns a File instance for the provided path
-	 *
-	 * @param string $relativeServerPath
-	 * @param array|null $properties
-	 * @return File
 	 */
-	public function fetchFile($relativeServerPath, ?array $properties = null): File {
+	public function fetchFile(string $relativeServerPath, ?array $properties = null): File {
 		$this->ensureConnection();
 		$file = $this->context->getWeb()->getFileByServerRelativeUrl($relativeServerPath);
 		$this->loadAndExecute($file, $properties);
@@ -138,12 +112,8 @@ class Client {
 
 	/**
 	 * returns a Folder instance for the provided path
-	 *
-	 * @param string $relativeServerPath
-	 * @param array|null $properties
-	 * @return Folder
 	 */
-	public function fetchFolder($relativeServerPath, ?array $properties = null) {
+	public function fetchFolder(string $relativeServerPath, ?array $properties = null): Folder {
 		$this->ensureConnection();
 		$folder = $this->context->getWeb()->getFolderByServerRelativeUrl($relativeServerPath);
 		$allFields = $folder->getListItemAllFields();
@@ -156,11 +126,9 @@ class Client {
 	/**
 	 * adds a folder on the given server path
 	 *
-	 * @param string $relativeServerPath
-	 * @return Folder
 	 * @throws Exception
 	 */
-	public function createFolder($relativeServerPath) {
+	public function createFolder(string $relativeServerPath): Folder {
 		$this->ensureConnection();
 
 		$parentFolder = $this->context->getWeb()->getFolderByServerRelativeUrl(dirname($relativeServerPath));
@@ -173,12 +141,11 @@ class Client {
 	/**
 	 * downloads a file by passing it directly into a file resource
 	 *
-	 * @param $relativeServerPath
 	 * @param resource $fp a file resource open for writing
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function getFileViaStream($relativeServerPath, $fp) {
+	public function getFileViaStream(string $relativeServerPath, $fp): bool {
 		if (!is_resource($fp)) {
 			throw new \InvalidArgumentException('file resource expected');
 		}
@@ -197,13 +164,11 @@ class Client {
 	}
 
 	/**
-	 * @param string $relativeServerPath
 	 * @param resource $fp
-	 * @param string $localPath - we need to pass the file size for the content length header
 	 * @return void
 	 * @throws RequestException
 	 */
-	public function overwriteFileViaStream($relativeServerPath, $fp, $localPath): void {
+	public function overwriteFileViaStream(string $relativeServerPath, $fp, string $localPath): void {
 		// inspired by File::saveBinary()
 		$file = $this->fetchFile($relativeServerPath);
 		$contentPath = new FileContentPath($file->getResourcePath());
@@ -224,12 +189,9 @@ class Client {
 	 * needs to reimplement adding-file-tp-sp-logic quite some… perhaps upload an
 	 * empty file and continue with overwriteFileViaStream?
 	 *
-	 * @param $relativeServerPath
-	 * @param $content
-	 * @return File
 	 * @throws Exception
 	 */
-	public function uploadNewFile($relativeServerPath, $content) {
+	public function uploadNewFile(string $relativeServerPath, string $content): File {
 		$parentFolder = $this->context->getWeb()->getFolderByServerRelativeUrl(dirname($relativeServerPath));
 		$fileCollection = $parentFolder->getFiles();
 
@@ -244,43 +206,32 @@ class Client {
 	/**
 	 * moves a file or a folder to the given destination
 	 *
-	 * @param string $oldPath
-	 * @param string $newPath
-	 * @return bool
 	 * @throws Exception
 	 */
-	public function rename($oldPath, $newPath) {
+	public function rename(string $oldPath, string $newPath): bool {
 		$this->ensureConnection();
 
 		$item = $this->fetchFileOrFolder($oldPath);
 		if ($item instanceof File) {
 			$this->renameFile($item, $newPath);
-		} elseif ($item instanceof Folder) {
-			$this->renameFolder($item, $newPath);
 		} else {
-			return false;
+			$this->renameFolder($item, $newPath);
 		}
 		return true;
 	}
 
 	/**
 	 * renames a folder
-	 *
-	 * @param Folder $folder
-	 * @param string $newPath
 	 */
-	private function renameFolder(Folder $folder, $newPath) {
+	private function renameFolder(Folder $folder, string $newPath): void {
 		$folder->rename(basename($newPath));
 		$this->context->executeQuery();
 	}
 
 	/**
 	 * moves a file
-	 *
-	 * @param File $file
-	 * @param string $newPath
 	 */
-	private function renameFile(File $file, $newPath) {
+	private function renameFile(File $file, string $newPath): void {
 		$newPath = rawurlencode($newPath);
 		$file->moveTo($newPath, 0);
 		$this->context->executeQuery();
@@ -288,10 +239,8 @@ class Client {
 
 	/**
 	 * deletes a provided File or Folder
-	 *
-	 * @param ClientObject $item
 	 */
-	public function delete(ClientObject $item) {
+	public function delete(ClientObject $item): void {
 		$this->ensureConnection();
 		if ($item instanceof File) {
 			$this->deleteFile($item);
@@ -303,20 +252,17 @@ class Client {
 	/**
 	 * deletes (in fact recycles) the given file on SP
 	 *
-	 * @param File $file
 	 * @throws Exception
 	 */
-	public function deleteFile(File $file) {
+	public function deleteFile(File $file): void {
 		$file->recycle();
 		$this->context->executeQuery();
 	}
 
 	/**
 	 * deletes (in fact recycles) the given Folder on SP.
-	 *
-	 * @param Folder $folder
 	 */
-	public function deleteFolder(Folder $folder) {
+	public function deleteFolder(Folder $folder): void {
 		$folder->recycle();
 		$this->context->executeQuery();
 	}
@@ -324,10 +270,9 @@ class Client {
 	/**
 	 * returns a Folder- and a FileCollection of the children of the given directory
 	 *
-	 * @param Folder $folder
 	 * @return ClientObjectCollection[]
 	 */
-	public function fetchFolderContents(Folder $folder) {
+	public function fetchFolderContents(Folder $folder): array {
 		$this->ensureConnection();
 
 		$folderCollection = $folder->getFolders();
@@ -344,11 +289,8 @@ class Client {
 
 	/**
 	 * tests whether the provided instance is hidden
-	 *
-	 * @param ClientObject $file
-	 * @return bool
 	 */
-	public function isHidden(ClientObject $file) {
+	public function isHidden(ClientObject $file): bool {
 		// ClientObject itself does not have getListItemAllFields but is
 		// the common denominator of File and Folder
 		if (!$file instanceof File && !$file instanceof Folder && !$file instanceof Field) {
@@ -360,17 +302,15 @@ class Client {
 		}
 		return in_array(
 			(string)$file->getProperty(Storage::SP_PROPERTY_NAME),
-			$this->knownSP2013SystemFolders
+			$this->knownSP2013SystemFolders,
+			true
 		);
 	}
 
 	/**
 	 * requests the permission for the provided file or folder
-	 *
-	 * @param ClientObject $item
-	 * @return BasePermissions
 	 */
-	public function getPermissions(ClientObject $item) {
+	public function getPermissions(ClientObject $item): BasePermissions {
 		if (!$item instanceof File && !$item instanceof Folder) {
 			throw new \InvalidArgumentException('File or Folder expected');
 		}
@@ -392,7 +332,7 @@ class Client {
 	/**
 	 * @return ClientObjectCollection[]
 	 */
-	public function getDocumentLibraries() {
+	public function getDocumentLibraries(): array {
 		$this->ensureConnection();
 		$lists = $this->context->getWeb()->getLists();
 		$lists->filter('BaseTemplate eq 101 and hidden eq false and NoCrawl eq false');
@@ -435,7 +375,7 @@ class Client {
 	 * @param ClientObject $object
 	 * @param array|null $properties
 	 */
-	public function loadAndExecute(ClientObject $object, ?array $properties = null) {
+	public function loadAndExecute(ClientObject $object, ?array $properties = null): void {
 		$this->context->load($object, $properties);
 		$this->context->executeQuery();
 	}
@@ -445,8 +385,8 @@ class Client {
 	 *
 	 * @throws \InvalidArgumentException
 	 */
-	private function ensureConnection() {
-		if ($this->context instanceof ClientContext) {
+	private function ensureConnection(): void {
+		if (isset($this->context)) {
 			return;
 		}
 

@@ -7,9 +7,9 @@
 
 namespace OCA\SharePoint\Storage;
 
+use Exception;
 use Icewind\Streams\CallbackWrapper;
 use Icewind\Streams\IteratorDirectory;
-use OC\Cache\CappedMemoryCache;
 use OC\Files\Storage\Common;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
@@ -17,8 +17,10 @@ use OCA\SharePoint\ContextsFactory;
 use OCA\SharePoint\NotFoundException;
 use OCA\SharePoint\Vendor\Office365\Runtime\ClientObject;
 use OCA\SharePoint\Vendor\Office365\Runtime\ClientObjectCollection;
+use OCA\SharePoint\Vendor\Office365\SharePoint\BasePermissions;
 use OCA\SharePoint\Vendor\Office365\SharePoint\File;
 use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
+use OCP\Cache\CappedMemoryCache;
 use OCP\Files\FileInfo;
 use OCP\ITempManager;
 use OCP\Server;
@@ -37,44 +39,35 @@ class Storage extends Common {
 	public const SP_PERMISSION_UPDATE = 3;
 	public const SP_PERMISSION_DELETE = 4;
 
-	/** @var string */
-	protected $server;
+	protected string $server;
 
-	/** @var string */
-	protected $documentLibrary;
+	protected string $documentLibrary;
 
-	/** @var string */
-	protected $authUser;
+	protected string $authUser;
 
-	/** @var string */
-	protected $authPwd;
+	protected string $authPwd;
 
-	/** @var Client */
-	protected $spClient;
+	protected Client $spClient;
 
-	/** @var CappedMemoryCache */
-	protected $fileCache;
-	/** @var false|mixed */
-	protected $forceNtlm;
+	protected CappedMemoryCache $fileCache;
+	protected bool $forceNtlm;
 
-	/** @var ContextsFactory */
-	private $contextsFactory;
+	private ContextsFactory $contextsFactory;
 
-	/** @var ITempManager */
-	private $tempManager;
+	private ITempManager $tempManager;
 
 	public function __construct($parameters) {
 		$this->server = rtrim($parameters['host'], '/') . '/';
 		$this->documentLibrary = ltrim($parameters['documentLibrary'], '/');
 
-		if (strpos($this->documentLibrary, '"') !== false) {
+		if (str_contains($this->documentLibrary, '"')) {
 			// they are, amongst others, not allowed and we use it in the filter
 			// cf. https://support.microsoft.com/en-us/kb/2933738
 			// TODO: verify, it talks about files and folders mostly
 			throw new \InvalidArgumentException('Illegal character in Document Library Name');
 		}
 
-		if (!isset($parameters['user']) || !isset($parameters['password'])) {
+		if (!isset($parameters['user'], $parameters['password'])) {
 			throw new \UnexpectedValueException('No user or password given');
 		}
 		$this->authUser = $parameters['user'];
@@ -88,23 +81,16 @@ class Storage extends Common {
 	 * Get the identifier for the storage,
 	 * the returned id should be the same for every storage object that is created with the same parameters
 	 * and two storage objects with the same id should refer to two storages that display the same files.
-	 *
-	 * @return string
-	 * @since 6.0.0
 	 */
-	public function getId() {
+	public function getId(): string {
 		return 'SharePoint::' . $this->server . '::' . $this->documentLibrary . '::' . $this->authUser;
 	}
 
 	/**
 	 * see http://php.net/manual/en/function.mkdir.php
 	 * implementations need to implement a recursive mkdir
-	 *
-	 * @param string $path
-	 * @return bool
-	 * @since 6.0.0
 	 */
-	public function mkdir($path) {
+	public function mkdir(string $path): bool {
 		$serverUrl = $this->formatPath($path);
 		try {
 			$folder = $this->spClient->createFolder($serverUrl);
@@ -116,7 +102,7 @@ class Storage extends Common {
 				]
 			]);
 			return true;
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->fileCache->remove($serverUrl);
 			logger('sharepoint')->info($e->getMessage(), ['exception' => $e]);
 			return false;
@@ -125,19 +111,15 @@ class Storage extends Common {
 
 	/**
 	 * see http://php.net/manual/en/function.rmdir.php
-	 *
-	 * @param string $path
-	 * @return bool
-	 * @since 6.0.0
 	 */
-	public function rmdir($path) {
+	public function rmdir(string $path): bool {
 		$serverUrl = $this->formatPath($path);
 		try {
 			$folder = $this->getFileOrFolder($serverUrl);
 			$this->spClient->delete($folder);
 			$this->fileCache->set($serverUrl, false);
 			return true;
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			$this->fileCache->remove($serverUrl);
 			return false;
 		}
@@ -146,11 +128,9 @@ class Storage extends Common {
 	/**
 	 * see http://php.net/manual/en/function.opendir.php
 	 *
-	 * @param string $path
 	 * @return resource|false
-	 * @since 6.0.0
 	 */
-	public function opendir($path) {
+	public function opendir(string $path): mixed {
 		try {
 			$serverUrl = $this->formatPath($path);
 			$collections = $this->getFolderContents($serverUrl);
@@ -167,7 +147,7 @@ class Storage extends Common {
 			}
 
 			return IteratorDirectory::wrap($files);
-		} catch (NotFoundException $e) {
+		} catch (NotFoundException) {
 			return false;
 		}
 	}
@@ -180,14 +160,14 @@ class Storage extends Common {
 	 * @return array|false
 	 * @since 6.0.0
 	 */
-	public function stat($path) {
+	public function stat(string $path): array|false {
 		$serverUrl = $this->formatPath($path);
 		try {
 			if ($path === '' || $path === '/') {
 				return $this->statForDocumentLibrary();
 			}
 			$file = $this->getFileOrFolder($serverUrl);
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return false;
 		}
 
@@ -225,7 +205,7 @@ class Storage extends Common {
 		return false;
 	}
 
-	protected function statForDocumentLibrary() {
+	protected function statForDocumentLibrary(): array|false {
 		try {
 			$dLib = $this->spClient->getDocumentLibrary($this->documentLibrary);
 			$mtimeValue = (string)$dLib->getProperty(self::SP_PROPERTY_MTIME_LAST_ITEM);
@@ -254,35 +234,28 @@ class Storage extends Common {
 	/**
 	 * see http://php.net/manual/en/function.filetype.php
 	 *
-	 * @param string $path
-	 * @return false|string
-	 * @throws \Exception
-	 * @since 6.0.0
+	 * @throws Exception
 	 */
-	public function filetype($path) {
+	public function filetype(string $path): string|false {
 		try {
 			$serverUrl = $this->formatPath($path);
 			$object = $this->getFileOrFolder($serverUrl);
-		} catch (NotFoundException $e) {
+		} catch (NotFoundException) {
 			return false;
 		}
 		if ($object instanceof File) {
 			return 'file';
-		} elseif ($object instanceof Folder) {
-			return 'dir';
-		} else {
-			return false;
 		}
+		if ($object instanceof Folder) {
+			return 'dir';
+		}
+		return false;
 	}
 
 	/**
 	 * see http://php.net/manual/en/function.file_exists.php
-	 *
-	 * @param string $path
-	 * @return bool
-	 * @since 6.0.0
 	 */
-	public function file_exists($path) {
+	public function file_exists(string $path): bool {
 		try {
 			$serverUrl = $this->formatPath($path);
 			// alternative approach is to use a CAML query instead of querying
@@ -291,19 +264,15 @@ class Storage extends Common {
 			// existing files are checked) and measurements.
 			$this->getFileOrFolder($serverUrl);
 			return true;
-		} catch (NotFoundException $e) {
+		} catch (NotFoundException) {
 			return false;
 		}
 	}
 
 	/**
 	 * see http://php.net/manual/en/function.unlink.php
-	 *
-	 * @param string $path
-	 * @return bool
-	 * @since 6.0.0
 	 */
-	public function unlink($path) {
+	public function unlink(string $path): bool {
 		// file methods get called twice at least, returning true
 		if (!$this->file_exists($path)) {
 			return true;
@@ -314,16 +283,12 @@ class Storage extends Common {
 			$this->spClient->delete($item);
 			$this->fileCache->set($serverUrl, false);
 			return true;
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return false;
 		}
 	}
 
-	/**
-	 * @param string $source
-	 * @param string $target
-	 */
-	public function rename($source, $target): bool {
+	public function rename(string $source, string $target): bool {
 		$oldPath = $this->formatPath($source);
 		$newPath = $this->formatPath($target);
 
@@ -331,7 +296,7 @@ class Storage extends Common {
 			$item = $this->getFileOrFolder($newPath);
 			$this->spClient->delete($item);
 			$this->fileCache->remove($newPath);
-		} catch (NotFoundException $e) {
+		} catch (NotFoundException) {
 			// noop
 		}
 
@@ -346,7 +311,7 @@ class Storage extends Common {
 				$this->fileCache->remove($oldPath);
 			}
 			return $isRenamed;
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			return false;
 		}
 	}
@@ -354,12 +319,9 @@ class Storage extends Common {
 	/**
 	 * see http://php.net/manual/en/function.fopen.php
 	 *
-	 * @param string $path
-	 * @param string $mode
 	 * @return resource|false
-	 * @since 6.0.0
 	 */
-	public function fopen($path, $mode) {
+	public function fopen(string $path, string $mode) {
 		$serverUrl = $this->formatPath($path);
 
 		switch ($mode) {
@@ -423,11 +385,7 @@ class Storage extends Common {
 		return false;
 	}
 
-	/**
-	 * @param string $tmpFile
-	 * @param string $path
-	 */
-	public function writeBack($tmpFile, $path) {
+	public function writeBack(string $tmpFile, string $path): void {
 		$serverUrl = $this->formatPath($path);
 		$content = file_get_contents($tmpFile);
 		$fp = fopen($tmpFile, 'r');
@@ -441,65 +399,44 @@ class Storage extends Common {
 				$file = $this->spClient->uploadNewFile($serverUrl, $content);
 				$this->fileCache->set($serverUrl, ['instance' => $file]);
 			}
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			logger('sharepoint')->error('Failed to write back: ' . $e->getMessage(), ['exception' => $e]);
 		}
 	}
 
-	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isCreatable($path): bool {
+	public function isCreatable(string $path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_CREATE);
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return parent::isCreatable($path);
 		}
 	}
 
-	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isUpdatable($path): bool {
+	public function isUpdatable(string $path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_UPDATE);
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return parent::isUpdatable($path);
 		}
 	}
 
-	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isReadable($path): bool {
+	public function isReadable(string $path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_READ);
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return parent::isReadable($path);
 		}
 	}
 
-	/**
-	 * @param string $path
-	 * @return bool
-	 */
-	public function isDeletable($path): bool {
+	public function isDeletable(string $path): bool {
 		try {
 			return $this->hasPermission($path, self::SP_PERMISSION_DELETE);
-		} catch (\Exception $e) {
+		} catch (Exception) {
 			return parent::isDeletable($path);
 		}
 	}
 
-	/**
-	 * @param string $path
-	 * @param int $permissionType
-	 * @return bool
-	 */
-	private function hasPermission($path, $permissionType): bool {
+	private function hasPermission(string $path, int $permissionType): bool {
 		$serverUrl = $this->formatPath($path);
 		return $this->getUserPermissions($serverUrl)->has($permissionType);
 	}
@@ -507,20 +444,13 @@ class Storage extends Common {
 	/**
 	 * see http://php.net/manual/en/function.touch.php
 	 * If the backend does not support the operation, false should be returned
-	 *
-	 * @param string $path
-	 * @param int $mtime
-	 * @return bool
-	 * @since 6.0.0
 	 */
-	public function touch($path, $mtime = null): bool {
+	public function touch(string $path, ?int $mtime = null): bool {
 		return false;
 	}
 
 	/**
 	 * work around dependency injection issues, so we can test this class properly
-	 *
-	 * @param array $parameters
 	 */
 	private function fixDI(array $parameters): void {
 		if (isset($parameters['contextFactory'])
@@ -558,10 +488,9 @@ class Storage extends Common {
 	}
 
 	/**
-	 * @param $serverUrl
 	 * @return ClientObjectCollection[]
 	 */
-	private function getFolderContents($serverUrl): array {
+	private function getFolderContents(string $serverUrl): array {
 		$folder = $this->getFileOrFolder($serverUrl);
 		$entry = $this->fileCache->get($serverUrl);
 		if ($entry === null || !isset($entry['children'])) {
@@ -594,11 +523,9 @@ class Storage extends Common {
 	}
 
 	/**
-	 * @param string $serverUrl
-	 * @return \Office365\PHP\Client\SharePoint\BasePermissions
 	 * @throws NotFoundException
 	 */
-	private function getUserPermissions($serverUrl) {
+	private function getUserPermissions(string $serverUrl): BasePermissions {
 		// temporarily, cf. https://github.com/vgrem/phpSPO/issues/93#issuecomment-489024363
 		throw new NotFoundException('Could not retrieve permissions');
 
@@ -612,7 +539,7 @@ class Storage extends Common {
 		}
 		try {
 			$permissions = $this->spClient->getPermissions($item);
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$permissions = false;
 		}
 		$entry['permissions'] = $permissions;
@@ -624,21 +551,20 @@ class Storage extends Common {
 	}
 
 	/**
-	 * @param $serverUrl
-	 * @return File|Folder
 	 * @throws NotFoundException
 	 */
-	private function getFileOrFolder($serverUrl) {
+	private function getFileOrFolder(string $serverUrl): File|Folder {
 		$entry = $this->fileCache->get($serverUrl);
 		if ($entry === false) {
 			throw new NotFoundException('File or Folder not found');
-		} elseif ($entry === null || !isset($entry['instance'])) {
+		}
+		if ($entry === null || !isset($entry['instance'])) {
 			try {
 				$file = $this->spClient->fetchFileOrFolder($serverUrl);
 			} catch (NotFoundException $e) {
 				$this->fileCache->set($serverUrl, false);
 				throw $e;
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				logger('sharepoint')->error($e->getMessage(), ['exception' => $e]);
 				throw new NotFoundException($e->getMessage(), $e->getCode(), $e);
 			}
@@ -666,13 +592,7 @@ class Storage extends Common {
 		return $item ?? $this->getFileOrFolder($serverUrl);
 	}
 
-	/**
-	 * creates the relative server "url" out of the provided path
-	 *
-	 * @param $path
-	 * @return string
-	 */
-	private function formatPath($path) {
+	private function formatPath(string $path): string {
 		$path = mb_strtolower(trim($path, '/'));
 		$rootFolder = $this->spClient->getDocumentLibrariesRootFolder($this->documentLibrary);
 		$serverUrl = $rootFolder->getProperty(self::SP_PROPERTY_URL);
