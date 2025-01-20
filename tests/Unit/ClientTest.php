@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -186,7 +187,8 @@ class SharePointClientTest extends TestCase {
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
 		$folderCollectionMock->expects($this->once())
 			->method('add')
-			->with($dirName);
+			->with($dirName)
+			->willReturn($this->createMock(Folder::class));
 
 		$folderMock = $this->createMock(Folder::class);
 		$folderMock->expects($this->once())
@@ -221,7 +223,8 @@ class SharePointClientTest extends TestCase {
 		$folderCollectionMock = $this->createMock(FolderCollection::class);
 		$folderCollectionMock->expects($this->once())
 			->method('add')
-			->with($dirName);
+			->with($dirName)
+			->willReturn($this->createMock(Folder::class));
 
 		$folderMock = $this->createMock(Folder::class);
 		$folderMock->expects($this->once())

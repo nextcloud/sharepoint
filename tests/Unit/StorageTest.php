@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2016 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -7,7 +8,6 @@
 namespace OCA\Files_External\Tests\Storage;
 
 use InvalidArgumentException;
-use OC\Cache\CappedMemoryCache;
 use OCA\SharePoint\Client;
 use OCA\SharePoint\ClientFactory;
 use OCA\SharePoint\ContextsFactory;
@@ -17,6 +17,7 @@ use OCA\SharePoint\Vendor\Office365\SharePoint\ClientContext;
 use OCA\SharePoint\Vendor\Office365\SharePoint\File;
 use OCA\SharePoint\Vendor\Office365\SharePoint\Folder;
 use OCA\SharePoint\Vendor\Office365\SharePoint\SPList;
+use OCP\Cache\CappedMemoryCache;
 use OCP\Files\FileInfo;
 use Test\TestCase;
 

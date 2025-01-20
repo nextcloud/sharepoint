@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2019 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -19,10 +20,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
 class ListLibraries extends Base {
-	/** @var ClientFactory */
-	protected $clientFactory;
-	/** @var ContextsFactory */
-	protected $ctxFactory;
 
 	/**
 	 * from: egrep -o 'getProperty\("[^"]*"' vendor/vgrem/php-spo/src/SharePoint/SPList.php | egrep -o '"[^"]*"' | tr '"' "'"
@@ -131,13 +128,14 @@ class ListLibraries extends Base {
 		'WriteSecurity',
 	];
 
-	public function __construct(ClientFactory $clientFactory, ContextsFactory $ctxFactory) {
+	public function __construct(
+		protected ClientFactory $clientFactory,
+		protected ContextsFactory $ctxFactory,
+	) {
 		parent::__construct();
-		$this->clientFactory = $clientFactory;
-		$this->ctxFactory = $ctxFactory;
 	}
 
-	protected function configure() {
+	protected function configure(): void {
 		$this
 			->setName('sharepoint:list-libraries')
 			->setDescription('List the available document libraries')
@@ -171,7 +169,7 @@ class ListLibraries extends Base {
 			);
 	}
 
-	protected function defaultOutput(OutputInterface $output, array $libraries, bool $json = false) {
+	protected function defaultOutput(OutputInterface $output, array $libraries, bool $json = false): void {
 		$rows = [];
 		foreach ($libraries as $library) {
 			if (!$library instanceof SPList) {
@@ -196,7 +194,7 @@ class ListLibraries extends Base {
 		$table->render();
 	}
 
-	protected function allPropertiesOutput(OutputInterface $output, array $libraries, bool $json = false) {
+	protected function allPropertiesOutput(OutputInterface $output, array $libraries, bool $json = false): void {
 		if (empty($libraries)) {
 			return;
 		}
@@ -229,11 +227,9 @@ class ListLibraries extends Base {
 			}
 			$table->render();
 		}
-
-		return;
 	}
 
-	protected function execute(InputInterface $input, OutputInterface $output) {
+	protected function execute(InputInterface $input, OutputInterface $output): int {
 		$password = $input->getArgument('password');
 		if ($password === null) {
 			/** @var QuestionHelper $helper */

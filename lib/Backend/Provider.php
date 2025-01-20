@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SPDX-FileCopyrightText: 2017 Nextcloud GmbH and Nextcloud contributors
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -12,18 +13,17 @@ use OCA\Files_External\Lib\Config\IBackendProvider;
 use OCP\L10N\IFactory;
 
 class Provider implements IBackendProvider {
-	/** @var IFactory */
-	protected $lFactory;
 
-	public function __construct(IFactory $lFactory) {
-		$this->lFactory = $lFactory;
+	public function __construct(
+		protected IFactory $lFactory,
+	) {
 	}
 
 	/**
 	 * @since 9.1.0
 	 * @return Backend[]
 	 */
-	public function getBackends() {
+	public function getBackends(): array {
 		$backend = new \OCA\SharePoint\Backend\Backend(
 			$this->lFactory->get('sharepoint'),
 			new Password($this->lFactory->get('files_external'))
