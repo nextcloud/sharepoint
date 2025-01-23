@@ -29,7 +29,7 @@ jobs:
       matrix:
         php-versions: ['8.1', '8.2', '8.3']
         databases: ['sqlite']
-        server-versions: ['master']
+        server-versions: ['stable31']
 
     name: integration-php${{ matrix.php-versions }}-${{ matrix.databases }}
 
