@@ -24,10 +24,10 @@
 		"cs:fix": "php-cs-fixer fix",
 		"lint": "find . -name \\*.php -not -path './vendor/*' -not -path './build/*' -print0 | xargs -0 -n1 php -l",
 		"test:unit": "phpunit -c phpunit.xml --fail-on-warning  --fail-on-risky --color",
-		"psalm": "./vendor/bin/psalm.phar --show-info=false --no-cache",
-                "psalm:update-baseline": "./vendor/bin/psalm.phar --update-baseline",
-                "psalm:fix": "./vendor/bin/psalm.phar --no-cache --alter --issues=InvalidReturnType,InvalidNullableReturnType,MismatchingDocblockParamType,MismatchingDocblockReturnType,MissingParamType,InvalidFalsableReturnType",
-                "psalm:fix:dry": "./vendor/bin/psalm.phar --no-cache --alter --issues=InvalidReturnType,InvalidNullableReturnType,MismatchingDocblockParamType,MismatchingDocblockReturnType,MissingParamType,InvalidFalsableReturnType --dry-run",
+		"psalm": "./vendor/bin/psalm --show-info=false --no-cache",
+		"psalm:update-baseline": "./vendor/bin/psalm --update-baseline",
+		"psalm:fix": "./vendor/bin/psalm --no-cache --alter --issues=InvalidReturnType,InvalidNullableReturnType,MismatchingDocblockParamType,MismatchingDocblockReturnType,MissingOverrideAttribute,MissingParamType,InvalidFalsableReturnType",
+		"psalm:fix:dry": "./vendor/bin/psalm --no-cache --alter --issues=InvalidReturnType,InvalidNullableReturnType,MismatchingDocblockParamType,MismatchingDocblockReturnType,MissingOverrideAttribute,MissingParamType,InvalidFalsableReturnType --dry-run",
 		"post-install-cmd": [
 			"@composer bin all install --ignore-platform-reqs # unfortunately the flag is required for 8.0",
 			"vendor/bin/php-scoper add-prefix --force # Scope our dependencies",
@@ -48,7 +48,6 @@
 	"require-dev": {
 		"phpunit/phpunit": "^9.5",
 		"nextcloud/coding-standard": "^1.3",
-		"psalm/phar": "^5.26",
 		"nextcloud/ocp": "dev-stable32"
 	},
 	"extra": {
