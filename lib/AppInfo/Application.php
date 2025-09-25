@@ -20,12 +20,14 @@ class Application extends App implements IBootstrap {
 		parent::__construct('sharepoint');
 	}
 
+	#[\Override]
 	public function register(IRegistrationContext $context): void {
 		$context->registerSensitiveMethods(SamlTokenProvider::class, ['acquireSecurityToken']);
 		$context->registerSensitiveMethods(AuthenticationContext::class, ['acquireToken', 'acquireTokenForUser']);
 		$context->registerEventListener('OCA\\Files_External::loadAdditionalBackends', ExternalStoragesRegistrationListener::class);
 	}
 
+	#[\Override]
 	public function boot(IBootContext $context): void {
 	}
 }
