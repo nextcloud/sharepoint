@@ -24,6 +24,7 @@ class ExternalStoragesRegistrationListener implements IEventListener {
 	) {
 	}
 
+	#[\Override]
 	public function handle(Event $event): void {
 		$this->backendService->registerBackendProvider($this->backendProvider);
 	}

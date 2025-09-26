@@ -23,6 +23,7 @@ class Provider implements IBackendProvider {
 	 * @since 9.1.0
 	 * @return Backend[]
 	 */
+	#[\Override]
 	public function getBackends(): array {
 		$backend = new \OCA\SharePoint\Backend\Backend(
 			$this->lFactory->get('sharepoint'),
