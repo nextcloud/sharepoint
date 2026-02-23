@@ -1,4 +1,10 @@
 { "translations": {
-    "Host" : "хост"
+    "Enforce NTLM auth" : "NTLM нэвтрэлтийг шаардах",
+    "Acquiring a SAML token is attempted first by default." : "Анхдагч байдлаар эхлээд SAML токен авахыг оролддог.",
+    "SharePoint" : "SharePoint",
+    "Host" : "хост",
+    "Document Library" : "Баримт бичгийн сан",
+    "SharePoint Backend" : "SharePoint арын систем",
+    "SharePoint Backend for External storages" : "Гадны хадгалах сангийн SharePoint арын систем"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }
