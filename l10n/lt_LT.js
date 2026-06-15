@@ -1,6 +1,8 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Enforce NTLM auth" : "Įgalinti NTLM autentifikavimą",
+    "Acquiring a SAML token is attempted first by default." : "Pagal numatytuosius nustatymus pirmiausia bandoma gauti SAML prieigos raktą.",
     "SharePoint" : "„SharePoint“",
     "Host" : "Serveris",
     "Document Library" : "Dokumentų biblioteka",
