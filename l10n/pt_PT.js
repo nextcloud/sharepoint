@@ -1,6 +1,7 @@
 OC.L10N.register(
     "sharepoint",
     {
+    "Acquiring a SAML token is attempted first by default." : "A aquisição de um token SAML é tentada primeiro por padrão. ",
     "SharePoint" : "SharePoint",
     "Host" : "Anfitrião",
     "Document Library" : "Biblioteca de Documentos",
