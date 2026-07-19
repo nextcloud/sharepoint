@@ -4,7 +4,7 @@ OC.L10N.register(
     "SharePoint" : "SharePoint",
     "Host" : "Värd",
     "Document Library" : "Dokumentbibliotek",
-    "SharePoint Backend" : "SharePoint Backend",
-    "SharePoint Backend for External storages" : "SharePoint Backend för externa lager"
+    "SharePoint Backend" : "SharePoint-bakände",
+    "SharePoint Backend for External storages" : "SharePoint-bakände för extern lagring"
 },
 "nplurals=2; plural=(n != 1);");
