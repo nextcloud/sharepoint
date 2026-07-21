@@ -2,7 +2,7 @@
     "Enforce NTLM auth" : "Impor autenticação NTLM",
     "Acquiring a SAML token is attempted first by default." : "A aquisição de um token SAML é tentada primeiro por padrão. ",
     "SharePoint" : "SharePoint",
-    "Host" : "Host",
+    "Host" : "Hospedeiro",
     "Document Library" : "Biblioteca de Documentos",
     "SharePoint Backend" : "Back-end SharePoint",
     "SharePoint Backend for External storages" : "Back-end SharePoint para Armazenamentos externos",
