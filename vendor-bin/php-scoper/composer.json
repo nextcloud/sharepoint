@@ -1,7 +1,7 @@
 {
     "require": {
         "humbug/php-scoper": "^0.18",
-        "cweagans/composer-patches": "^1.7"
+        "cweagans/composer-patches": "^2.0"
     },
 	"config": {
 		"platform": {
