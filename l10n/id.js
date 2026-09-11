@@ -1,6 +1,13 @@
 OC.L10N.register(
     "sharepoint",
     {
-    "Host" : "Host"
+    "Enforce NTLM auth" : "Terapkan autentikasi NTLM",
+    "Acquiring a SAML token is attempted first by default." : "Secara default, sistem akan mencoba memperoleh token SAML terlebih dahulu.",
+    "SharePoint" : "SharePoint",
+    "Host" : "Host",
+    "Document Library" : "Pustaka Dokumen",
+    "SharePoint Backend" : "Backend SharePoint",
+    "SharePoint Backend for External storages" : "Backend SharePoint untuk Penyimpanan Eksternal",
+    "The Sharepoint Backend allows administrators to add Sharepoint document libraries as folders in Nextcloud. This offers an easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization. Users can use the desktop client, mobile apps or web interface and comment, tag, share and collaboratively edit files on Sharepoint just like with any other data on Nextcloud.\n\nSupports Sharepoint 2013, 2016 and 365. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.\n\nLearn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)" : "Backend SharePoint memungkinkan administrator menambahkan pustaka dokumen SharePoint sebagai folder di Nextcloud. Ini memberikan cara mudah bagi pengguna untuk mengakses data SharePoint di tempat yang sama dengan file lainnya, sehingga memudahkan kolaborasi dan berbagi di dalam maupun lintas organisasi. Pengguna dapat memakai klien desktop, aplikasi seluler, atau antarmuka web untuk memberikan komentar, menambahkan tag, membagikan, dan mengedit file SharePoint secara kolaboratif seperti data lainnya di Nextcloud.\n\nMendukung SharePoint 2013, 2016, dan 365. Nextcloud mengakses SharePoint melalui SharePoint REST API dan menggunakan autentikasi NTLM. Nextcloud mematuhi izin akses file yang terkait dengan kredensial pengguna yang dikonfigurasikan. Pembuatan versi dan berbagi ditangani oleh Nextcloud.\n\nPelajari lebih lanjut tentang Penyimpanan Eksternal dan SharePoint di [https://nextcloud.com/storage/](https://nextcloud.com/storage/)"
 },
 "nplurals=1; plural=0;");
