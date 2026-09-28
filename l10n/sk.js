@@ -2,7 +2,7 @@ OC.L10N.register(
     "sharepoint",
     {
     "Enforce NTLM auth" : "Vynútiť NTLM autentikáciu",
-    "Acquiring a SAML token is attempted first by default." : "Získanie SAML tokenu je predvolené ako prvé.",
+    "Acquiring a SAML token is attempted first by default." : "Získanie tokenu SAML sa štandardne pokúša ako prvé.",
     "SharePoint" : "SharePoint",
     "Host" : "Adresa servera",
     "Document Library" : "Knižnica dokumentov",
