@@ -1,5 +1,11 @@
 { "translations": {
+    "Enforce NTLM auth" : "Impune autentificarea NTLM",
+    "Acquiring a SAML token is attempted first by default." : "Implicit, se încearcă mai întâi obținerea unui token SAML.",
     "SharePoint" : "SharePoint",
-    "Host" : "Gazdă"
+    "Host" : "Gazdă",
+    "Document Library" : "Bibliotecă de documente",
+    "SharePoint Backend" : "Backend SharePoint",
+    "SharePoint Backend for External storages" : "Backend SharePoint pentru Stocare externă",
+    "The Sharepoint Backend allows administrators to add Sharepoint document libraries as folders in Nextcloud. This offers an easy way for users to access Sharepoint data in the same place where they find their other files, facilitating collaboration and sharing within and across the borders of the organization. Users can use the desktop client, mobile apps or web interface and comment, tag, share and collaboratively edit files on Sharepoint just like with any other data on Nextcloud.\n\nSupports Sharepoint 2013, 2016 and 365. Nextcloud accesses Sharepoint through the Sharepoint REST API and uses NTLM authentication. Nextcloud respects file access permissions associated with its configured user credentials. Versioning and sharing are handled by Nextcloud.\n\nLearn more about External Storage and Sharepoint on [https://nextcloud.com/storage/](https://nextcloud.com/storage/)" : "Backendul SharePoint le permite administratorilor să adauge biblioteci de documente SharePoint ca dosare în Nextcloud. Astfel, utilizatorii pot accesa ușor datele din SharePoint în același loc în care își găsesc și celelalte fișiere, ceea ce facilitează colaborarea și partajarea atât în interiorul organizației, cât și dincolo de granițele ei. Utilizatorii pot folosi clientul desktop, aplicațiile mobile sau interfața web pentru a comenta, eticheta, partaja și edita colaborativ fișierele din SharePoint, la fel ca orice alte date din Nextcloud.\n\nSunt acceptate SharePoint 2013, 2016 și 365. Nextcloud accesează SharePoint prin API-ul REST SharePoint și folosește autentificarea NTLM. Nextcloud respectă permisiunile de acces la fișiere asociate datelor de autentificare configurate. Versiunile și partajarea sunt gestionate de Nextcloud.\n\nAflă mai multe despre Stocare externă și SharePoint pe [https://nextcloud.com/storage/](https://nextcloud.com/storage/)"
 },"pluralForm" :"nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?2:1));"
 }
