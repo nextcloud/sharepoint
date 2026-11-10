@@ -25,11 +25,11 @@ Learn more about External Storage and SharePoint on [https://nextcloud.com/stora
 2. Install/enable the *Sharepoint Backend* app (this app).
 3. Get your remote's URL:
     1. Go [here](https://onedrive.live.com/about/en-us/signin/) to open your OneDrive or to sign in.
-    2. Look at your address bar. The URL should look like this: `https://[YOUR-DOMAIN]-my.sharepoint.com/personal/[YOUR-EMAIL]/_layouts/15/onedrive.aspx`. You'll only need this URL up to the email address.
-    3. You'll most likely need to append `Documents` to the URL. That subdirectory contains the actual data stored on your OneDrive.
-3. In Nextcloud, go to *Administration Settings* and select *External Storage*.
-4. Add a *Sharepoint* storage.
-5. Enter the remote URL from above in the *Host* field (i.e. `https://[YOUR-DOMAIN]-my.sharepoint.com/personal/[YOUR-EMAIL]/Documents`
-6. Enter your email as *Username* and enter your *password* and you are good to go. (Note: If you have 2FA enabled, you have to generate an app password within your Sharepoint account). 
+    2. Look at your address bar. For a URL like `https://contoso-my.sharepoint.com/personal/user_contoso_com/_layouts/15/onedrive.aspx`, copy the personal-site portion: `https://contoso-my.sharepoint.com/personal/user_contoso_com`. Use the actual URL shown for your account.
+4. In Nextcloud, go to *Administration Settings* and select *External Storage*.
+5. Add a *Sharepoint* storage.
+6. Enter the personal-site URL in the *Host* field. Do not append `/Documents`.
+7. Enter `Documents` in the *Document Library* field, or use the actual library title if different.
+8. Enter your email as *Username* and enter your *password* and you are good to go. (Note: If you have 2FA enabled, you have to generate an app password within your Sharepoint account).
 
 Credit goes to [rclone](https://rclone.org/webdav/#sharepoint-online).
