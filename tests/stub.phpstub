@@ -34,6 +34,7 @@ namespace OC\Files\Storage {
 		abstract public function isLocal(): bool;
 		abstract public function instanceOfStorage($class): bool;
 		abstract public function getDirectDownload($path): array|false;
+		abstract public function getDirectDownloadById(string $fileId): array|false;
 		abstract public function verifyPath($path, $fileName): void;
 		abstract public function copyFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath, $preserveMtime = false): bool;
 		abstract public function moveFromStorage(IStorage $sourceStorage, $sourceInternalPath, $targetInternalPath): bool;
