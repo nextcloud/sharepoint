@@ -20,11 +20,6 @@ return [
 	// For more see: https://github.com/humbug/php-scoper/blob/master/docs/configuration.md#prefix
 	'prefix' => 'OCA\\SharePoint\\Vendor',
 
-	// output-dir is only possible with php-scoper >= 0.18, but it is not compatible with other supported
-	// PHP versions, breaking CI. So we stick with 0.17.0 until we can afford to drop testing on PHP < 8.2.
-	// All other 0.17.* version are factually broken with PHP 8.0.
-	//'output-dir' => 'lib/Vendor',
-
 	// For more see: https://github.com/humbug/php-scoper/blob/master/docs/configuration.md#finders-and-paths
 	'finders' => [
 		Finder::create()->files()
